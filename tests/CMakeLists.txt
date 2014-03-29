@@ -19,5 +19,5 @@ function(add_test_by_name name)
   add_dependencies (${TEST_NAME} libindicatortransferservice)
   target_link_libraries (${TEST_NAME} indicatortransferservice gtest ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBS})
 endfunction()
-add_test_by_name(test-hello)
+add_test_by_name(test-mocks)
 
