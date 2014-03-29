@@ -1,0 +1,20 @@
+[Indicator Service]
+Name=indicator-transfer
+ObjectPath=/com/canonical/indicator/transfer
+Position=20
+
+[desktop]
+ObjectPath=/com/canonical/indicator/transfer/desktop
+
+[desktop_greeter]
+ObjectPath=/com/canonical/indicator/transfer/desktop_greeter
+
+[desktop_lockscreen]
+ObjectPath=/com/canonical/indicator/transfer/desktop_greeter
+
+[phone]
+ObjectPath=/com/canonical/indicator/transfer/phone
+
+[phone_greeter]
+ObjectPath=/com/canonical/indicator/transfer/phone_greeter
+
