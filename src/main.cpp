@@ -106,18 +106,20 @@ main(int /*argc*/, char** /*argv*/)
     std::vector<std::shared_ptr<Menu>> menus;
     for(int i=0, n=Menu::NUM_PROFILES; i<n; i++)
         menus.push_back(factory.buildMenu(Menu::Profile(i)));
+#endif
 
     // export them & run until we lose the busname
     auto loop = g_main_loop_new(nullptr, false);
+#if 0
     Exporter exporter;
     exporter.name_lost.connect([loop](){
         g_message("%s exiting; failed/lost bus ownership", GETTEXT_PACKAGE);
         g_main_loop_quit(loop);
     });
     exporter.publish(actions, menus);
+#endif
+    g_idle_add([](gpointer){gronk(); return G_SOURCE_REMOVE;}, nullptr);
     g_main_loop_run(loop);
     g_main_loop_unref(loop);
-#endif
-    gronk();
     return 0;
 }
