@@ -5,7 +5,7 @@ add_library (gtest STATIC
 set_target_properties (gtest PROPERTIES INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${GTEST_INCLUDE_DIR})
 set_target_properties (gtest PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS} -w)
 
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g ${CC_WARNING_ARGS}")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g ${CXX_WARNING_ARGS}")
 
 # look for headers in our src dir, and also in the directories where we autogenerate files...
 include_directories (${CMAKE_SOURCE_DIR}/src)
@@ -21,6 +21,9 @@ function(add_test_by_name name)
 endfunction()
 add_test_by_name(test-mocks)
 add_test_by_name(test-gactions)
+add_test_by_name(test-actions-live)
 add_test_by_name(test-menus)
 add_test_by_name(test-exporter)
+
+add_test (cppcheck cppcheck --enable=all -q --error-exitcode=2 --inline-suppr -I${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests)
 

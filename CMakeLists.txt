@@ -41,7 +41,7 @@ include_directories (SYSTEM ${SERVICE_DEPS_INCLUDE_DIRS})
 ##  custom targets
 ##
 
-add_custom_target (cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2 --inline-suppr
+add_custom_target (cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2 -I${CMAKE_SOURCE_DIR}/include
                    ${CMAKE_SOURCE_DIR}/src
                    ${CMAKE_SOURCE_DIR}/tests)
 
