@@ -17,34 +17,15 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-#include <transfer/gronk.h>
-
-#if 0
-#include <datetime/actions-live.h>
-#include <datetime/clock.h>
-#include <datetime/clock-watcher.h>
-#include <datetime/engine-mock.h>
-#include <datetime/engine-eds.h>
-#include <datetime/exporter.h>
-#include <datetime/locations-settings.h>
-#include <datetime/menu.h>
-#include <datetime/planner-range.h>
-#include <datetime/settings-live.h>
-#include <datetime/snap.h>
-#include <datetime/state.h>
-#include <datetime/timezone-file.h>
-#include <datetime/timezones-live.h>
-#endif
+#include <transfer/exporter.h>
+#include <transfer/menu.h>
+#include <transfer/transfer-mock.h>
+#include <transfer/transfer-source-mock.h>
 
 #include <glib/gi18n.h> // bindtextdomain()
 #include <gio/gio.h>
 
-#if 0
-#include <url-dispatcher.h>
-#endif
-
 #include <locale.h>
-
 
 using namespace unity::indicator::transfer;
 
@@ -60,14 +41,12 @@ main(int /*argc*/, char** /*argv*/)
     bindtextdomain(GETTEXT_PACKAGE, GNOMELOCALEDIR);
     textdomain(GETTEXT_PACKAGE);
 
+    std::shared_ptr<Transfers> transfers (new Transfers);
+    std::shared_ptr<MockTransferSource> mock_transfer_source (new MockTransferSource(transfers));
+    std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer ("aaa", "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg")); 
+    mock_transfer_source->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
+
 #if 0
-    // we don't show appointments in the greeter,
-    // so no need to connect to EDS there...
-    std::shared_ptr<Engine> engine;
-    if (!g_strcmp0("lightdm", g_get_user_name()))
-        engine.reset(new MockEngine);
-    else
-        engine.reset(new EdsEngine);
 
     // build the state, actions, and menufactory
     std::shared_ptr<State> state(new State);
@@ -118,7 +97,6 @@ main(int /*argc*/, char** /*argv*/)
     });
     exporter.publish(actions, menus);
 #endif
-    g_idle_add([](gpointer){gronk(); return G_SOURCE_REMOVE;}, nullptr);
     g_main_loop_run(loop);
     g_main_loop_unref(loop);
     return 0;
