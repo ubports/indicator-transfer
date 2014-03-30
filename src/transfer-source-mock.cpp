@@ -41,24 +41,19 @@ MockTransferSource::~MockTransferSource()
 void
 MockTransferSource::add(const std::shared_ptr<Transfer>& transfer)
 {
-    g_message("%s adding '%s'", G_STRFUNC, transfer->id().c_str());
     auto tmp = m_transfers->get();
-    g_message("old size is %zu", (size_t)tmp.size());
     tmp.push_back(transfer);
     m_transfers->set(tmp);
-    g_message("new size is %zu", (size_t)tmp.size());
 }
 
 void
 MockTransferSource::remove(const Transfer::Id& id)
 {
-    g_message("%s removing '%s'", G_STRFUNC, id.c_str());
+    auto predicate = [id](const std::shared_ptr<Transfer>& t){return t->id()==id;};
     auto tmp = m_transfers->get();
-    g_message("old size is %zu", (size_t)tmp.size());
-    auto new_end = remove_if (tmp.begin(), tmp.end(), [id](const std::shared_ptr<Transfer>& t){return t->id()==id;});
+    auto new_end = std::remove_if (tmp.begin(), tmp.end(), predicate);
     tmp.erase(new_end, tmp.end());
     m_transfers->set(tmp);
-    g_message("new size is %zu", (size_t)tmp.size());
 }
 
 /***
