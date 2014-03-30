@@ -95,8 +95,6 @@ protected:
         g_clear_object(&m_menu);
     }
 
-    virtual GVariant* create_header_state() =0;
-
     void update_header()
     {
         auto action_group = m_gactions->action_group();
@@ -111,6 +109,20 @@ protected:
     GMenu* m_submenu = nullptr;
 
 private:
+
+    GVariant* create_header_state()
+    {
+        auto title_v = g_variant_new_string(_("Transfers"));
+        const auto visible = !m_transfers->get().empty();
+
+        GVariantBuilder b;
+        g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
+        g_variant_builder_add(&b, "{sv}", "title", title_v);
+        g_variant_builder_add(&b, "{sv}", "label", title_v);
+        g_variant_builder_add(&b, "{sv}", "accessible-desc", title_v);
+        g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(visible));
+        return g_variant_builder_end (&b);
+    }
 
     void create_gmenu()
     {
@@ -258,19 +270,6 @@ protected:
         update_header();
     }
 
-    GVariant* create_header_state()
-    {
-        auto title_v = g_variant_new_string(_("Transfers"));
-        const auto visible = !m_transfers->get().empty();
-
-        GVariantBuilder b;
-        g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
-        g_variant_builder_add(&b, "{sv}", "title", title_v);
-        g_variant_builder_add(&b, "{sv}", "label", title_v);
-        g_variant_builder_add(&b, "{sv}", "accessible-desc", title_v);
-        g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(visible));
-        return g_variant_builder_end (&b);
-    }
 };
 
 class PhoneMenu: public PhoneBaseMenu
