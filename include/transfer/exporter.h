@@ -59,7 +59,7 @@ private:
     guint m_own_id = 0;
     guint m_exported_actions_id = 0;
     GDBusConnection * m_dbus_connection = nullptr;
-    std::shared_ptr<Actions> m_actions;
+    std::shared_ptr<GActions> m_gactions;
     std::vector<std::shared_ptr<Menu>> m_menus;
 
     // we've got raw pointers and gsignal tags in here, so disable copying

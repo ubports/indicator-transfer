@@ -6,12 +6,12 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g ${CXX_WARNING_ARGS} -Wno-
 add_definitions (-DG_LOG_DOMAIN="Indicator-Transfer")
 
 add_library (${SERVICE_LIB} STATIC
+             exporter.cpp
+             gactions.cpp
+             menu.cpp
              transfer-mock.cpp
              transfer-source.cpp
-             transfer-source-mock.cpp
-             gactions.cpp
-             #exporter.cpp
-             menu.cpp)
+             transfer-source-mock.cpp)
 include_directories (${CMAKE_SOURCE_DIR})
 link_directories (${SERVICE_DEPS_LIBRARY_DIRS})
 

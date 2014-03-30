@@ -17,15 +17,15 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <datetime/dbus-shared.h>
-#include <datetime/exporter.h>
+#include <transfer/dbus-shared.h>
+#include <transfer/exporter.h>
 
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 
 namespace unity {
 namespace indicator {
-namespace datetime {
+namespace transfer {
 
 /***
 ****
@@ -68,7 +68,7 @@ Exporter::on_bus_acquired(GDBusConnection* connection, const gchar* /*name*/)
     GError * error = nullptr;
     const auto id = g_dbus_connection_export_action_group(m_dbus_connection,
                                                           BUS_PATH,
-                                                          m_actions->action_group(),
+                                                          m_gactions->action_group(),
                                                           &error);
     if (id)
     {
@@ -92,7 +92,7 @@ Exporter::on_bus_acquired(GDBusConnection* connection, const gchar* /*name*/)
         else
         {
             if (error != nullptr)
-                g_warning("cannot export %s menu: %s", menu->name().c_str(), error->message);
+                g_warning("cannot export %s menu: %s", menu->name(), error->message);
             g_clear_error(&error);
         }
     }
@@ -120,10 +120,10 @@ Exporter::on_name_lost(GDBusConnection* /*connection*/, const gchar* /*name*/)
 ***/
 
 void
-Exporter::publish(const std::shared_ptr<Actions>& actions,
+Exporter::publish(const std::shared_ptr<GActions>& gactions,
                   const std::vector<std::shared_ptr<Menu>>& menus)
 {
-    m_actions = actions;
+    m_gactions = gactions;
     m_menus = menus;
     m_own_id = g_bus_own_name(G_BUS_TYPE_SESSION,
                               BUS_NAME,
@@ -139,7 +139,7 @@ Exporter::publish(const std::shared_ptr<Actions>& actions,
 ****
 ***/
 
-} // namespace datetime
+} // namespace transfer
 } // namespace indicator
 } // namespace unity
 

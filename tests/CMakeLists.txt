@@ -21,4 +21,5 @@ function(add_test_by_name name)
 endfunction()
 add_test_by_name(test-mocks)
 add_test_by_name(test-gactions)
+add_test_by_name(test-exporter)
 
