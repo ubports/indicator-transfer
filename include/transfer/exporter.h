@@ -20,7 +20,7 @@
 #ifndef INDICATOR_TRANSFER_EXPORTER_H
 #define INDICATOR_TRANSFER_EXPORTER_H
 
-#include <transfer/actions.h>
+#include <transfer/gactions.h>
 #include <transfer/menu.h>
 
 #include <core/signal.h>
@@ -45,15 +45,15 @@ public:
 
     core::Signal<> name_lost;
 
-    void publish(const std::shared_ptr<Actions>& actions,
+    void publish(const std::shared_ptr<GActions>& actions,
                  const std::vector<std::shared_ptr<Menu>>& menus);
 
 private:
-    static void on_bus_acquired(GDBusConnection*, const gchar *name, gpointer gthis);
-    void on_bus_acquired(GDBusConnection*, const gchar *name);
+    static void on_bus_acquired(GDBusConnection*, const gchar* name, gpointer gthis);
+    void on_bus_acquired(GDBusConnection*, const gchar* name);
 
-    static void on_name_lost(GDBusConnection*, const gchar *name, gpointer gthis);
-    void on_name_lost(GDBusConnection*, const gchar *name);
+    static void on_name_lost(GDBusConnection*, const gchar* name, gpointer gthis);
+    void on_name_lost(GDBusConnection*, const gchar* name);
 
     std::set<guint> m_exported_menu_ids;
     guint m_own_id = 0;
@@ -71,4 +71,4 @@ private:
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_DATETIME_EXPORTER_H
+#endif // INDICATOR_TRANSFER_EXPORTER_H
