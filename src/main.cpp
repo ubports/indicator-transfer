@@ -21,7 +21,7 @@
 #include <transfer/exporter.h>
 #include <transfer/menu.h>
 #include <transfer/transfer-mock.h>
-#include <transfer/transfer-source-mock.h>
+#include <transfer/transfer-controller-mock.h>
 
 #include <glib/gi18n.h> // bindtextdomain()
 #include <gio/gio.h>
@@ -42,12 +42,12 @@ main(int /*argc*/, char** /*argv*/)
     bindtextdomain(GETTEXT_PACKAGE, GNOMELOCALEDIR);
     textdomain(GETTEXT_PACKAGE);
 
-    // create the TransfersSource
+    // create the TransfersController
     // FIXME: mock transfers, for now
     std::shared_ptr<Transfers> transfers (new Transfers);
-    std::shared_ptr<MockTransferSource> mock_transfer_source (new MockTransferSource(transfers));
+    std::shared_ptr<MockTransferController> mock_transfer_controller (new MockTransferController(transfers));
     std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer ("aaa", "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg")); 
-    mock_transfer_source->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
+    mock_transfer_controller->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
 
     // create the Actions and the GActions bridge
     std::shared_ptr<Actions> actions (new LiveActions(transfers));

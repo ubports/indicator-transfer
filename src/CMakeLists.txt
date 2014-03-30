@@ -11,8 +11,8 @@ add_library (${SERVICE_LIB} STATIC
              gactions.cpp
              menu.cpp
              transfer-mock.cpp
-             transfer-source.cpp
-             transfer-source-mock.cpp)
+             transfer-controller.cpp
+             transfer-controller-mock.cpp)
 include_directories (${CMAKE_SOURCE_DIR})
 link_directories (${SERVICE_DEPS_LIBRARY_DIRS})
 

@@ -36,46 +36,86 @@ LiveActions::~LiveActions()
 {
 }
 
+std::shared_ptr<Transfer> LiveActions::find_transfer_by_id(const Transfer::Id& id) const
+{
+    for (const auto& transfer : m_transfers->get())
+        if (transfer->id() == id)
+            return transfer;
+
+    return std::shared_ptr<Transfer>();
+}
+
 void
 LiveActions::pause_all()
 {
-    g_message("FIXME: %s", G_STRFUNC);
+    for (const auto& transfer : m_transfers->get())
+        transfer->pause();
 }
 
 void
 LiveActions::resume_all()
 {
-    g_message("FIXME: %s", G_STRFUNC);
+    for (const auto& transfer : m_transfers->get())
+        transfer->resume();
 }
 
 void
 LiveActions::clear_all()
 {
-    g_message("FIXME: %s", G_STRFUNC);
+    for (const auto& transfer : m_transfers->get())
+        transfer->clear();
 }
 
 void
 LiveActions::activate(const Transfer::Id& id)
 {
-    g_message("FIXME: %s, id is \"%s\"", G_STRFUNC, id.c_str());
+    auto transfer = find_transfer_by_id(id);
+    g_return_if_fail(transfer);
+
+    switch(transfer->state().get())
+    {
+        case Transfer::STARTING:
+        case Transfer::RUNNING:
+            transfer->pause();
+            break;
+
+        case Transfer::CANCELING:
+            transfer->clear();
+            break;
+
+        case Transfer::PAUSED:
+        case Transfer::FAILED:
+            transfer->resume();
+            break;
+
+        case Transfer::DONE:
+            transfer->open();
+            break;
+    }
 }
 
 void
 LiveActions::pause(const Transfer::Id& id)
 {
-    g_message("FIXME: %s, id is \"%s\"", G_STRFUNC, id.c_str());
+    auto transfer = find_transfer_by_id(id);
+    g_return_if_fail(transfer);
+    transfer->pause();
 }
 
 void
 LiveActions::cancel(const Transfer::Id& id)
 {
-    g_message("FIXME: %s, id is \"%s\"", G_STRFUNC, id.c_str());
+    auto transfer = find_transfer_by_id(id);
+    g_return_if_fail(transfer);
+    transfer->cancel();
 }
 
 void
 LiveActions::resume(const Transfer::Id& id)
 {
-    g_message("FIXME: %s, id is \"%s\"", G_STRFUNC, id.c_str());
+    auto transfer = find_transfer_by_id(id);
+    g_return_if_fail(transfer);
+    transfer->resume();
 }
 
 /****

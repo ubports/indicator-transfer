@@ -38,17 +38,23 @@ public:
 
     core::Property<time_t>& last_active() { return m_last_active; }
 
+    void cancel();
+    void clear();
+    void open();
     void pause();
     void resume();
-    void cancel();
-    void open();
     void set_last_active(time_t t) { m_last_active.set(t); }
+
+    enum Action { Cancel, Clear, Open, Pause, Resume };
+    const std::vector<Action>& history() const { return m_history; }
+
 
 private:
     const Id m_id;
     const std::string m_icon_filename;
     core::Property<State> m_state;
     core::Property<time_t> m_last_active;
+    std::vector<Action> m_history;
 };
 
 } // namespace transfer

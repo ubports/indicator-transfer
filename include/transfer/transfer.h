@@ -46,6 +46,7 @@ struct Transfer
     virtual core::Property<State>& state() =0;
 
     virtual void cancel() =0;
+    virtual void clear() =0;
     virtual void open() =0;
     virtual void pause() =0;
     virtual void resume() =0;

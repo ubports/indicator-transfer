@@ -48,6 +48,7 @@ public:
     void resume(const Transfer::Id&);
 
 private:
+    std::shared_ptr<Transfer> find_transfer_by_id(const Transfer::Id&) const;
     std::shared_ptr<Transfers> m_transfers;
 };
 

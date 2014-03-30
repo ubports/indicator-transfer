@@ -43,24 +43,34 @@ void
 MockTransfer::pause()
 {
     m_state.set(PAUSED);
+    m_history.push_back(Pause);
 }
 
 void
 MockTransfer::resume()
 {
     m_state.set(RUNNING);
+    m_history.push_back(Resume);
 }
 
 void
 MockTransfer::cancel()
 {
     m_state.set(CANCELING);
+    m_history.push_back(Cancel);
+}
+
+void
+MockTransfer::clear()
+{
+    m_history.push_back(Clear);
 }
 
 void
 MockTransfer::open()
 {
-   g_warn_if_fail(state().get() != DONE);
+    g_warn_if_fail(state().get() != DONE);
+    m_history.push_back(Open);
 }
 
 GIcon*

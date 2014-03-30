@@ -18,7 +18,7 @@
  */
 
 #include <transfer/transfer-mock.h>
-#include <transfer/transfer-source-mock.h>
+#include <transfer/transfer-controller-mock.h>
 #include "actions-mock.h"
 
 #include <gtest/gtest.h>
@@ -57,19 +57,19 @@ TEST(TestMocks, TestMockTransfer)
     EXPECT_EQ(now, transfer->last_active().get());
 }
 
-TEST(TestMocks, TestMockTransferSource)
+TEST(TestMocks, TestMockTransferController)
 {
     std::shared_ptr<Transfers> transfers (new Transfers);
-    std::shared_ptr<MockTransferSource> mock_transfer_source (new MockTransferSource(transfers));
+    std::shared_ptr<MockTransferController> mock_transfer_controller (new MockTransferController(transfers));
     EXPECT_EQ(0, transfers->get().size());
 
     const Transfer::Id id = "some-id";
     const std::string icon_filename = "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg";
     std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer (id, icon_filename));
-    mock_transfer_source->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
+    mock_transfer_controller->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
     EXPECT_EQ(1, transfers->get().size());
 
-    mock_transfer_source->remove(id);
+    mock_transfer_controller->remove(id);
     EXPECT_EQ(0, transfers->get().size());
 }
 
