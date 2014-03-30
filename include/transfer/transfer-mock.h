@@ -41,6 +41,7 @@ public:
     void pause();
     void resume();
     void cancel();
+    void open();
     void set_last_active(time_t t) { m_last_active.set(t); }
 
 private:

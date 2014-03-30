@@ -57,6 +57,12 @@ MockTransfer::cancel()
     m_state.set(CANCELING);
 }
 
+void
+MockTransfer::open()
+{
+   g_warn_if_fail(state().get() != DONE);
+}
+
 GIcon*
 MockTransfer::icon() const
 {
