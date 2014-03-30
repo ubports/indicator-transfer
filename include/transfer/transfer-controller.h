@@ -17,8 +17,8 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_SOURCE_H
-#define INDICATOR_TRANSFER_SOURCE_H
+#ifndef INDICATOR_TRANSFER_CONTROLLER_H
+#define INDICATOR_TRANSFER_CONTROLLER_H
 
 #include <transfer/transfer.h>
 
@@ -28,11 +28,11 @@ namespace unity {
 namespace indicator {
 namespace transfer {
 
-class TransferSource
+class TransferController
 {
 public:
-    TransferSource(const std::shared_ptr<Transfers>& transfers);
-    virtual ~TransferSource();
+    TransferController(const std::shared_ptr<Transfers>& transfers);
+    virtual ~TransferController();
 
 protected:
     std::shared_ptr<Transfers> m_transfers;
@@ -42,4 +42,4 @@ protected:
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_SOURCE_H
+#endif // INDICATOR_TRANSFER_CONTROLLER_H

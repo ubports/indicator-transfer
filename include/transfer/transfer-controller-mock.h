@@ -17,30 +17,27 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/transfer-source.h>
+#ifndef INDICATOR_TRANSFER_TRANSFER_CONTROLLER_MOCK_H
+#define INDICATOR_TRANSFER_TRANSFER_CONTROLLER_MOCK_H
+
+#include <transfer/transfer-controller.h>
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
-/***
-****
-***/
-
-TransferSource::TransferSource (const std::shared_ptr<Transfers>& transfers):
-    m_transfers(transfers)
+struct MockTransferController: public TransferController
 {
-}
+public:
+    MockTransferController(const std::shared_ptr<Transfers>& transfers);
+    ~MockTransferController();
 
-TransferSource::~TransferSource()
-{
-}
-
-/***
-****
-***/
+    void add(const std::shared_ptr<Transfer>& transfer);
+    void remove(const Transfer::Id&);
+};
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
+#endif // INDICATOR_TRANSFER_TRANSFER_CONTROLLER_MOCK_H

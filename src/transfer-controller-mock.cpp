@@ -17,7 +17,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/transfer-source-mock.h>
+#include <transfer/transfer-controller-mock.h>
 
 #include <algorithm>
 
@@ -29,17 +29,17 @@ namespace transfer {
 ****
 ***/
 
-MockTransferSource::MockTransferSource(const std::shared_ptr<Transfers>& transfers):
-    TransferSource(transfers)
+MockTransferController::MockTransferController(const std::shared_ptr<Transfers>& transfers):
+    TransferController(transfers)
 {
 }
 
-MockTransferSource::~MockTransferSource()
+MockTransferController::~MockTransferController()
 {
 }
 
 void
-MockTransferSource::add(const std::shared_ptr<Transfer>& transfer)
+MockTransferController::add(const std::shared_ptr<Transfer>& transfer)
 {
     auto tmp = m_transfers->get();
     tmp.push_back(transfer);
@@ -47,7 +47,7 @@ MockTransferSource::add(const std::shared_ptr<Transfer>& transfer)
 }
 
 void
-MockTransferSource::remove(const Transfer::Id& id)
+MockTransferController::remove(const Transfer::Id& id)
 {
     auto predicate = [id](const std::shared_ptr<Transfer>& t){return t->id()==id;};
     auto tmp = m_transfers->get();
