@@ -20,4 +20,5 @@ function(add_test_by_name name)
   target_link_libraries (${TEST_NAME} indicatortransferservice gtest ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBS})
 endfunction()
 add_test_by_name(test-mocks)
+add_test_by_name(test-gactions)
 

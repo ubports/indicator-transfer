@@ -19,6 +19,7 @@
 
 #include <transfer/transfer-mock.h>
 #include <transfer/transfer-source-mock.h>
+#include "actions-mock.h"
 
 #include <gtest/gtest.h>
 
@@ -72,3 +73,45 @@ TEST(TestMocks, TestMockTransferSource)
     EXPECT_EQ(0, transfers->get().size());
 }
 
+TEST(TestMocks, TestMockActions)
+{
+    MockActions actions;
+    std::vector<MockActions::Action> expected_history;
+    EXPECT_TRUE(actions.id().empty());
+
+    actions.pause_all();
+    expected_history.push_back(MockActions::PauseAll);
+    EXPECT_EQ(expected_history, actions.history());
+
+    actions.resume_all();
+    expected_history.push_back(MockActions::ResumeAll);
+    EXPECT_EQ(expected_history, actions.history());
+
+    actions.clear_all();
+    expected_history.push_back(MockActions::ClearAll);
+    EXPECT_EQ(expected_history, actions.history());
+
+    Transfer::Id id = "aaa";
+    actions.pause(id);
+    expected_history.push_back(MockActions::Pause);
+    EXPECT_EQ(expected_history, actions.history());
+    EXPECT_EQ(actions.id(), id);
+
+    id = "bbb";
+    actions.cancel(id);
+    expected_history.push_back(MockActions::Cancel);
+    EXPECT_EQ(expected_history, actions.history());
+    EXPECT_EQ(actions.id(), id);
+
+    id = "ccc";
+    actions.resume(id);
+    expected_history.push_back(MockActions::Resume);
+    EXPECT_EQ(expected_history, actions.history());
+    EXPECT_EQ(actions.id(), id);
+
+    id = "ddd";
+    actions.activate(id);
+    expected_history.push_back(MockActions::Activate);
+    EXPECT_EQ(expected_history, actions.history());
+    EXPECT_EQ(actions.id(), id);
+}
