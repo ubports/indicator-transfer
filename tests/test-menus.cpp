@@ -111,7 +111,7 @@ protected:
         g_free(action_name);
     }
 
-    void InspectVisible(GMenuModel* menu_model, const char* name, bool expected_visibility)
+    void InspectVisible(GMenuModel*, const char* name, bool expected_visibility)
     {
         auto action_name = g_strdup_printf("%s-header", name);
         auto dict = g_action_group_get_action_state(m_gactions->action_group(), action_name);
@@ -140,6 +140,12 @@ TEST_F(MenuFixture, HelloWorld)
 }
 
 TEST_F(MenuFixture, Header)
+{
+    for(auto& menu : m_menus)
+      InspectHeader(menu->menu_model(), menu->name());
+}
+
+TEST_F(MenuFixture, Visible)
 {
     // since there are initally no transfers,
     // the indicator should be hidden
