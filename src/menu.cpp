@@ -142,32 +142,16 @@ private:
         g_object_unref(header);
     }
 
-    void add_transfer (GMenu* menu, const std::shared_ptr<Transfer>& transfer)
+    GMenuItem* create_transfer_menuitem(const std::shared_ptr<Transfer>& transfer)
     {
+        const auto& id = transfer->id().c_str();
         auto menu_item = g_menu_item_new (transfer->id().c_str(), nullptr);
-            //g_menu_item_set_attribute (menu_item, "x-canonical-time", "x", unix_time);
-            //g_menu_item_set_attribute (menu_item, "x-canonical-time-format", "s", fmt.c_str());
-#if 0
-            if (appt.has_alarms)
-            {
-                g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", "com.canonical.indicator.alarm");
-                g_menu_item_set_attribute_value(menu_item, G_MENU_ATTRIBUTE_ICON, get_serialized_alarm_icon());
-            }
-            else
-            {
-                g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", "com.canonical.indicator.appointment");
-            }
-
-            if (!appt.color.empty())
-                g_menu_item_set_attribute (menu_item, "x-canonical-color", "s", appt.color.c_str());
-
-            if (action_name != nullptr)
-                g_menu_item_set_action_and_target_value (menu_item, action_name,
-                                                         g_variant_new_string (appt.uid.c_str()));
-#endif
-
-        g_menu_append_item (menu, menu_item);
-        g_object_unref (menu_item);
+        //g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", "com.canonical.indicator.transfer");
+        g_menu_item_set_attribute (menu_item, "x-canonical-state", "i", transfer->state().get());
+        g_menu_item_set_attribute (menu_item, "x-canonical-uid", "s", id);
+        g_menu_item_set_attribute (menu_item, "x-canonical-time", "x", transfer->last_active().get());
+        g_menu_item_set_action_and_target_value (menu_item, "indicator.activate-transfer", g_variant_new_string(id));
+        return G_MENU_ITEM(menu_item);
     }
 
     void update_transfer(const std::shared_ptr<Transfer>& transfer)
@@ -180,7 +164,11 @@ private:
         auto menu = g_menu_new();
 
         for (const auto& transfer : m_transfers->get())
-            add_transfer (menu, transfer);
+        {
+            auto menu_item = create_transfer_menuitem(transfer);
+            g_menu_append_item (menu, menu_item);
+            g_object_unref (menu_item);
+        }
 
         return G_MENU_MODEL(menu);
     }
@@ -272,14 +260,15 @@ protected:
 
     GVariant* create_header_state()
     {
-        auto title = g_variant_new_string(_("Transfers"));
+        auto title_v = g_variant_new_string(_("Transfers"));
+        const auto visible = !m_transfers->get().empty();
 
         GVariantBuilder b;
         g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
-        g_variant_builder_add(&b, "{sv}", "title", title);
-        g_variant_builder_add(&b, "{sv}", "label", title);
-        g_variant_builder_add(&b, "{sv}", "accessible-desc", title);
-        g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(!m_transfers->get().empty()));
+        g_variant_builder_add(&b, "{sv}", "title", title_v);
+        g_variant_builder_add(&b, "{sv}", "label", title_v);
+        g_variant_builder_add(&b, "{sv}", "accessible-desc", title_v);
+        g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(visible));
         return g_variant_builder_end (&b);
     }
 };

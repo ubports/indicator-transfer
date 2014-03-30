@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
+#include <transfer/actions-live.h> 
 #include <transfer/exporter.h>
 #include <transfer/menu.h>
 #include <transfer/transfer-mock.h>
@@ -41,63 +42,34 @@ main(int /*argc*/, char** /*argv*/)
     bindtextdomain(GETTEXT_PACKAGE, GNOMELOCALEDIR);
     textdomain(GETTEXT_PACKAGE);
 
+    // create the TransfersSource
+    // FIXME: mock transfers, for now
     std::shared_ptr<Transfers> transfers (new Transfers);
     std::shared_ptr<MockTransferSource> mock_transfer_source (new MockTransferSource(transfers));
     std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer ("aaa", "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg")); 
     mock_transfer_source->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
 
-#if 0
+    // create the Actions and the GActions bridge
+    std::shared_ptr<Actions> actions (new LiveActions(transfers));
+    std::shared_ptr<GActions> gactions(new GActions(actions));
 
-    // build the state, actions, and menufactory
-    std::shared_ptr<State> state(new State);
-    std::shared_ptr<Settings> live_settings(new LiveSettings);
-    std::shared_ptr<Timezones> live_timezones(new LiveTimezones(live_settings, TIMEZONE_FILE));
-    std::shared_ptr<Clock> live_clock(new LiveClock(live_timezones));
-    std::shared_ptr<Timezone> file_timezone(new FileTimezone(TIMEZONE_FILE));
-    const auto now = live_clock->localtime();
-    state->settings = live_settings;
-    state->clock = live_clock;
-    state->locations.reset(new SettingsLocations(live_settings, live_timezones));
-    auto calendar_month = new MonthPlanner(std::shared_ptr<RangePlanner>(new SimpleRangePlanner(engine, file_timezone)), now);
-    state->calendar_month.reset(calendar_month);
-    state->calendar_upcoming.reset(new UpcomingPlanner(std::shared_ptr<RangePlanner>(new SimpleRangePlanner(engine, file_timezone)), now));
-    std::shared_ptr<Actions> actions(new LiveActions(state));
-    MenuFactory factory(actions, state);
-
-    // snap decisions
-    std::shared_ptr<UpcomingPlanner> upcoming_planner(new UpcomingPlanner(std::shared_ptr<RangePlanner>(new SimpleRangePlanner(engine, file_timezone)), now));
-    ClockWatcherImpl clock_watcher(live_clock, upcoming_planner);
-    Snap snap;
-    clock_watcher.alarm_reached().connect([&snap](const Appointment& appt){
-        auto snap_show = [](const Appointment& a){
-            const char* url;
-            if(!a.url.empty())
-                url = a.url.c_str();
-            else // alarm doesn't have a URl associated with it; use a fallback
-                url = "appid://com.ubuntu.clock/clock/current-user-version";
-            url_dispatch_send(url, nullptr, nullptr);
-        };
-        auto snap_dismiss = [](const Appointment&){};
-        snap(appt, snap_show, snap_dismiss);
-    });
-
-    // create the menus
+    // create the Menus
     std::vector<std::shared_ptr<Menu>> menus;
-    for(int i=0, n=Menu::NUM_PROFILES; i<n; i++)
-        menus.push_back(factory.buildMenu(Menu::Profile(i)));
-#endif
+    MenuFactory menu_factory (transfers, gactions);
+    for(int i=0; i<Menu::NUM_PROFILES; i++)
+      menus.push_back(menu_factory.buildMenu(Menu::Profile(i)));
 
-    // export them & run until we lose the busname
+    // export 'em and run until we lose the busname
     auto loop = g_main_loop_new(nullptr, false);
-#if 0
     Exporter exporter;
     exporter.name_lost.connect([loop](){
         g_message("%s exiting; failed/lost bus ownership", GETTEXT_PACKAGE);
         g_main_loop_quit(loop);
     });
-    exporter.publish(actions, menus);
-#endif
+    exporter.publish(gactions, menus);
     g_main_loop_run(loop);
+
+    // cleanup
     g_main_loop_unref(loop);
     return 0;
 }

@@ -1,7 +1,7 @@
 [Indicator Service]
 Name=indicator-transfer
 ObjectPath=/com/canonical/indicator/transfer
-Position=20
+Position=90
 
 [desktop]
 ObjectPath=/com/canonical/indicator/transfer/phone

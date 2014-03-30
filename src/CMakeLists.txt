@@ -6,6 +6,7 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g ${CXX_WARNING_ARGS} -Wno-
 add_definitions (-DG_LOG_DOMAIN="Indicator-Transfer")
 
 add_library (${SERVICE_LIB} STATIC
+             actions-live.cpp
              exporter.cpp
              gactions.cpp
              menu.cpp
