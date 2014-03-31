@@ -69,7 +69,7 @@ MockTransfer::clear()
 void
 MockTransfer::open()
 {
-    g_warn_if_fail(state().get() != DONE);
+    g_warn_if_fail(state().get() == DONE);
     m_history.push_back(Open);
 }
 

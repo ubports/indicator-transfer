@@ -31,33 +31,50 @@ class GlibFixture : public ::testing::Test
 {
   private:
 
-    //GLogFunc realLogHandler;
+    GLogFunc realLogHandler;
 
-  protected:
+    std::map<GLogLevelFlags,size_t> expected_log;
+    std::map<GLogLevelFlags,std::vector<std::string>> log;
 
-    std::map<GLogLevelFlags,int> logCounts;
-
-    void testLogCount(GLogLevelFlags log_level, int /*expected*/)
+    void test_log_counts()
     {
-#if 0
-      EXPECT_EQ(expected, logCounts[log_level]);
-#endif
+      const GLogLevelFlags levels_to_test[] = { G_LOG_LEVEL_ERROR,
+                                                G_LOG_LEVEL_CRITICAL,
+                                                G_LOG_LEVEL_MESSAGE,
+                                                G_LOG_LEVEL_WARNING };
 
-      logCounts.erase(log_level);
+      for(const auto& level : levels_to_test)
+      {
+        const auto& v = log[level];
+        const auto n = v.size();
+
+        EXPECT_EQ(expected_log[level], n);
+
+        if (expected_log[level] != n)
+            for (size_t i=0; i<n; ++i)
+                g_message("%d %s", (n+1), v[i].c_str());
+      }
+
+      expected_log.clear();
+      log.clear();
     }
-
-  private:
 
     static void default_log_handler(const gchar    * log_domain,
                                     GLogLevelFlags   log_level,
                                     const gchar    * message,
                                     gpointer         self)
     {
-      g_print("%s - %d - %s\n", log_domain, (int)log_level, message);
-      static_cast<GlibFixture*>(self)->logCounts[log_level]++;
+      auto tmp = g_strdup_printf ("%s:%d \"%s\"", log_domain, (int)log_level, message);
+      static_cast<GlibFixture*>(self)->log[log_level].push_back(tmp);
+      g_free(tmp);
     }
 
   protected:
+
+    void increment_expected_errors(GLogLevelFlags level, int n=1)
+    {
+      expected_log[level] += n;
+    }
 
     virtual void SetUp()
     {
@@ -65,30 +82,16 @@ class GlibFixture : public ::testing::Test
 
       loop = g_main_loop_new(nullptr, false);
 
-      //g_log_set_default_handler(default_log_handler, this);
-
-      // only use local, temporary settings
-      //g_assert(g_setenv("GSETTINGS_SCHEMA_DIR", SCHEMA_DIR, true));
-      g_assert(g_setenv("GSETTINGS_BACKEND", "memory", true));
-      //g_debug("SCHEMA_DIR is %s", SCHEMA_DIR);
+      g_log_set_default_handler(default_log_handler, this);
 
       g_unsetenv("DISPLAY");
-
     }
 
     virtual void TearDown()
     {
-#if 0
-      // confirm there aren't any unexpected log messages
-      EXPECT_EQ(0, logCounts[G_LOG_LEVEL_ERROR]);
-      EXPECT_EQ(0, logCounts[G_LOG_LEVEL_CRITICAL]);
-      EXPECT_EQ(0, logCounts[G_LOG_LEVEL_WARNING]);
-      EXPECT_EQ(0, logCounts[G_LOG_LEVEL_MESSAGE]);
-      EXPECT_EQ(0, logCounts[G_LOG_LEVEL_INFO]);
-#endif
+      test_log_counts();
 
-      // revert to glib's log handler
-      //g_log_set_default_handler(realLogHandler, this);
+      g_log_set_default_handler(realLogHandler, this);
 
       g_clear_pointer(&loop, g_main_loop_unref);
     }

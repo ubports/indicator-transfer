@@ -135,5 +135,50 @@ TEST_F(ActionsFixture, ClearAll)
 
 TEST_F(ActionsFixture, Activate)
 {
-    // FIXME: states
+    std::vector<MockTransfer::Action> expected_history;
+    EXPECT_EQ(expected_history, m_transfer_a->history());
+
+    m_live_actions->activate(m_transfer_a->id());
+    expected_history.push_back(MockTransfer::Pause);
+    EXPECT_EQ(expected_history, m_transfer_a->history());
+
+    m_live_actions->activate(m_transfer_a->id());
+    expected_history.push_back(MockTransfer::Resume);
+    EXPECT_EQ(expected_history, m_transfer_a->history());
+
+    m_transfer_a->state().set(Transfer::DONE);
+    m_live_actions->activate(m_transfer_a->id());
+    expected_history.push_back(MockTransfer::Open);
+    EXPECT_EQ(expected_history, m_transfer_a->history());
+
+    m_transfer_a->state().set(Transfer::CANCELING);
+    m_live_actions->activate(m_transfer_a->id());
+    expected_history.push_back(MockTransfer::Clear);
+    EXPECT_EQ(expected_history, m_transfer_a->history());
+}
+
+TEST_F(ActionsFixture, InvalidId)
+{
+    EXPECT_EQ(empty_history, m_transfer_a->history());
+    EXPECT_EQ(empty_history, m_transfer_b->history());
+
+    m_live_actions->pause("unknown-id");
+    increment_expected_errors(G_LOG_LEVEL_CRITICAL);
+    EXPECT_EQ(empty_history, m_transfer_a->history());
+    EXPECT_EQ(empty_history, m_transfer_b->history());
+
+    m_live_actions->resume("unknown-id");
+    increment_expected_errors(G_LOG_LEVEL_CRITICAL);
+    EXPECT_EQ(empty_history, m_transfer_a->history());
+    EXPECT_EQ(empty_history, m_transfer_b->history());
+
+    m_live_actions->cancel("unknown-id");
+    increment_expected_errors(G_LOG_LEVEL_CRITICAL);
+    EXPECT_EQ(empty_history, m_transfer_a->history());
+    EXPECT_EQ(empty_history, m_transfer_b->history());
+
+    m_live_actions->resume("unknown-id");
+    increment_expected_errors(G_LOG_LEVEL_CRITICAL);
+    EXPECT_EQ(empty_history, m_transfer_a->history());
+    EXPECT_EQ(empty_history, m_transfer_b->history());
 }

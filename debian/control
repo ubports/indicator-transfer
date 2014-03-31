@@ -6,6 +6,8 @@ Build-Depends: cmake,
                dbus,
                libglib2.0-dev (>= 2.35.4),
                libproperties-cpp-dev,
+# for coverage reports
+               lcov,
 # for tests
                cppcheck,
                libgtest-dev,
