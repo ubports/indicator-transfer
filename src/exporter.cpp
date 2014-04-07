@@ -35,7 +35,7 @@ Exporter::~Exporter()
 {
     if (m_dbus_connection != nullptr)
     {
-        for(auto& id : m_exported_menu_ids)
+        for(const auto& id : m_exported_menu_ids)
             g_dbus_connection_unexport_menu_model(m_dbus_connection, id);
 
         if (m_exported_actions_id)

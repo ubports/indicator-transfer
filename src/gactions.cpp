@@ -94,7 +94,7 @@ GActions::GActions(const std::shared_ptr<Actions>& actions):
     m_action_group(g_simple_action_group_new()),
     m_actions(actions)
 {
-    GActionEntry entries[] = {
+    const GActionEntry entries[] = {
         { "activate-transfer", on_transfer_activate, "s", nullptr },
         { "cancel-transfer", on_transfer_cancel, "s", nullptr },
         { "pause-transfer", on_transfer_pause, "s", nullptr },
