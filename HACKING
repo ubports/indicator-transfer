@@ -1,0 +1,47 @@
+Building the code
+-----------------
+ 1. $ cd indicator-transfer-X.Y.Z
+ 2. $ mkdir build
+ 3. $ cd build
+ 4. $ cmake ..
+    or
+    $ cmake -DCMAKE_INSTALL_PREFIX=/your/install/prefix/here ..
+    or
+    $ cmake -GNinja ..
+ 5. $ make
+
+Running the tests
+-----------------
+ 1. $ cd indicator-transfer-X.Y.Z
+ 2. $ mkdir build
+ 3. $ cd build
+ 4. $ cmake ..
+ 5. $ make
+ 6. $ make test
+ 7. $ make cppcheck
+
+Generating Test Coverage Reports
+--------------------------------
+ 1. $ cd indicator-transfer-X.Y.Z
+ 2. $ mkdir build-coverage
+ 3. $ cd build-coverage
+ 4. $ cmake -DCMAKE_BUILD_TYPE=coverage ..
+ 5. $ make
+ 6. $ make coverage-html
+
+What Gets Installed
+-------------------
+ * $DATADIR/upstart/sessions/indicator-transfer.conf
+ * $DATADIR/upstart/xdg/autostart/indicator-transfer.desktop
+ * $DATADIR/share/unity/indicators/com.canonical.indicator.transfer
+ * $PKGLIBEXECDIR/indicator-transfer/indicator-transfer-service
+ * /etc/xdg/autostart/indicator-transfer.desktop
+
+-- Installing: /usr/share/upstart/sessions/indicator-transfer.conf
+-- Installing: /etc/xdg/autostart/indicator-transfer.desktop
+-- Installing: /usr/share/upstart/xdg/autostart/indicator-transfer.desktop
+-- Installing: /usr/share/unity/indicators/com.canonical.indicator.transfer
+-- Installing: /usr/lib/i386-linux-gnu/indicator-transfer/indicator-transfer-service
+
+
+

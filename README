@@ -1,1 +1,38 @@
-Data up, data down, nobody knows where it really goes. Except the User should, and that's what this is for!
+ACTIONS
+=======
+
+ * "activate-transfer"
+   Description: default action when tapping a transfer menuitem.
+   If the transfer completed, clicking opens the destination application
+   (eg, tapping on a listitem to view a picture in the Gallery).
+   If the transfer failed or is paused, activation tries again.
+   State: None
+   Parameter: s an opaque uid to specify which transer to use.
+                This uid comes from the menuitems' x-canonical-uid property.
+
+ * "cancel-transfer"
+ * "pause-transfer"
+ * "resume-transfer"
+   Description: actions that operate on a single transfer.
+   State: None
+   Parameter: s an opaque uid to specify which transer to use.
+                This uid comes from the menuitems' x-canonical-uid property.
+
+ * "pause-all"
+ * "resume-all"
+ * "clear-all"
+   Description: actions that operate on all transfers.
+   State: None
+   Parameter: None
+
+
+CUSTOM MENUITEMS
+================
+
+ * Transfer
+   - x-canonical-type         s "com.canonical.indicator.transfer"
+   - x-canonical-state        i int value matching the Transfer::State enum
+   - x-canonical-uid          s the transfer's unique identifier string
+   - x-canonical-time         x the date of the last activity
+
+
