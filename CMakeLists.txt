@@ -49,7 +49,7 @@ add_custom_target (cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2 
 ##  Actually building the service
 ##
 
-set (CXX_WARNING_ARGS " -Wall -Wextra -pedantic")
+set (CXX_WARNING_ARGS " -Wall -Wno-missing-field-initializers -Wextra -pedantic")
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/include)
