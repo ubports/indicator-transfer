@@ -73,12 +73,12 @@ TEST_F(ExporterFixture, HelloWorld)
 TEST_F(ExporterFixture, Publish)
 {
     // create the MockActions and GActions bridge
-    std::shared_ptr<MockActions> mock_actions(new MockActions);
-    std::shared_ptr<Actions> actions = std::dynamic_pointer_cast<Actions>(mock_actions);
-    std::shared_ptr<GActions> gactions(new GActions(actions));
+    std::shared_ptr<MockActions> mock_actions{new MockActions};
+    std::shared_ptr<Actions> actions {std::dynamic_pointer_cast<Actions>(mock_actions)};
+    std::shared_ptr<GActions> gactions{new GActions{actions}};
 
     // create the menus
-    std::shared_ptr<Transfers> transfers (new Transfers);
+    std::shared_ptr<Transfers> transfers {new Transfers{}};
     std::vector<std::shared_ptr<Menu>> menus;
     MenuFactory menu_factory (transfers, gactions);
     for(int i=0; i<Menu::NUM_PROFILES; i++)
@@ -117,7 +117,7 @@ TEST_F(ExporterFixture, Publish)
 
     // try closing the connection prematurely
     // to test Exporter's name-lost signal
-    bool name_lost = false;
+    bool name_lost {false};
     exporter.name_lost.connect([this,&name_lost](){
         name_lost = true;
         g_main_loop_quit(loop);

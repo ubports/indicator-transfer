@@ -53,14 +53,14 @@ protected:
         super::SetUp();
 
         // create the MockActions and GActions bridge
-        m_mock_actions.reset(new MockActions);
+        m_mock_actions.reset(new MockActions{});
         m_actions = std::dynamic_pointer_cast<Actions>(m_mock_actions);
-        m_gactions.reset(new GActions(m_actions));
+        m_gactions.reset(new GActions{m_actions});
 
         // create the menus
-        m_transfers.reset(new Transfers);
+        m_transfers.reset(new Transfers{});
         m_menus.clear();
-        m_menu_factory.reset(new MenuFactory(m_transfers, m_gactions));
+        m_menu_factory.reset(new MenuFactory{m_transfers, m_gactions});
         for(int i=0; i<Menu::NUM_PROFILES; ++i)
           m_menus.push_back(m_menu_factory->buildMenu(Menu::Profile(i)));
     }
@@ -158,7 +158,7 @@ TEST_F(MenuFixture, Visible)
     std::vector<std::shared_ptr<Transfer>> transfers;
     const Transfer::Id id = "some-id";
     const std::string icon_filename = "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg";
-    std::shared_ptr<Transfer> transfer(new MockTransfer(id, icon_filename));
+    std::shared_ptr<Transfer> transfer(new MockTransfer{id, icon_filename});
     transfers.push_back(transfer);
     m_transfers->set(transfers);
     EXPECT_EQ(1, m_transfers->get().size());

@@ -28,7 +28,7 @@ namespace transfer {
 ****/
 
 LiveActions::LiveActions(std::shared_ptr<Transfers>& transfers):
-    m_transfers(transfers)
+    m_transfers{transfers}
 {
 }
 

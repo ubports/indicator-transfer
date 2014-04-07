@@ -45,11 +45,11 @@ protected:
     {
         super::SetUp();
 
-        m_transfer_a.reset(new MockTransfer("id-a", "/usr/share/icons/ubuntu-mobile/status/scalable/search.svg"));
-        m_transfer_b.reset(new MockTransfer("id-b", "/usr/share/icons/ubuntu-mobile/status/scalable/syncing.svg"));
+        m_transfer_a.reset(new MockTransfer{"id-a", "/usr/share/icons/ubuntu-mobile/status/scalable/search.svg"});
+        m_transfer_b.reset(new MockTransfer{"id-b", "/usr/share/icons/ubuntu-mobile/status/scalable/syncing.svg"});
         m_transfers.reset(new Transfers({std::dynamic_pointer_cast<Transfer>(m_transfer_a),
                                          std::dynamic_pointer_cast<Transfer>(m_transfer_b)}));
-        m_live_actions.reset(new LiveActions(m_transfers));
+        m_live_actions.reset(new LiveActions{m_transfers});
         m_actions = std::dynamic_pointer_cast<Actions>(m_live_actions);
     }
 
@@ -66,7 +66,7 @@ protected:
 
     void TestIdFunc(std::function<void(const Transfer::Id&)> callme, MockTransfer::Action expected_action)
     {
-        const std::vector<MockTransfer::Action> expected_history({expected_action});
+        const std::vector<MockTransfer::Action> expected_history{expected_action};
 
         EXPECT_EQ(empty_history, m_transfer_a->history());
         EXPECT_EQ(empty_history, m_transfer_b->history());

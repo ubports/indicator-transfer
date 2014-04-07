@@ -31,8 +31,8 @@ TEST(TestMocks, TestMockTransfer)
 {
     const Transfer::Id id = "some-id";
     const std::string icon_filename = "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg";
-    std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer(id, icon_filename));
-    std::shared_ptr<Transfer> transfer = std::dynamic_pointer_cast<Transfer>(mock_transfer);
+    std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer{id, icon_filename});
+    std::shared_ptr<Transfer> transfer {std::dynamic_pointer_cast<Transfer>(mock_transfer)};
 
     EXPECT_EQ(transfer->id(), id);
 
@@ -59,13 +59,13 @@ TEST(TestMocks, TestMockTransfer)
 
 TEST(TestMocks, TestMockTransferController)
 {
-    std::shared_ptr<Transfers> transfers (new Transfers);
-    std::shared_ptr<MockTransferController> mock_transfer_controller (new MockTransferController(transfers));
+    std::shared_ptr<Transfers> transfers (new Transfers{});
+    std::shared_ptr<MockTransferController> mock_transfer_controller (new MockTransferController{transfers});
     EXPECT_EQ(0, transfers->get().size());
 
     const Transfer::Id id = "some-id";
     const std::string icon_filename = "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg";
-    std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer (id, icon_filename));
+    std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer {id, icon_filename});
     mock_transfer_controller->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
     EXPECT_EQ(1, transfers->get().size());
 

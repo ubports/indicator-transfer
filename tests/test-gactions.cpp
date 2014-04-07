@@ -38,9 +38,9 @@ protected:
     {
         super::SetUp();
 
-        m_mock_actions.reset(new MockActions);
+        m_mock_actions.reset(new MockActions{});
         m_actions = std::dynamic_pointer_cast<Actions>(m_mock_actions);
-        m_gactions.reset(new GActions(m_actions));
+        m_gactions.reset(new GActions{m_actions});
     }
 
     virtual void TearDown()
@@ -64,7 +64,7 @@ protected:
         g_action_group_activate_action(action_group, action_name, nullptr);
 
         // test the results
-        EXPECT_EQ(std::vector<MockActions::Action>({expected_action}),
+        EXPECT_EQ(std::vector<MockActions::Action>{expected_action},
                   m_mock_actions->history());
     }
 
@@ -82,7 +82,7 @@ protected:
         g_action_group_activate_action(action_group, action_name, v);
 
         // test the results
-        EXPECT_EQ(std::vector<MockActions::Action>({expected_action}),
+        EXPECT_EQ(std::vector<MockActions::Action>{expected_action},
                   m_mock_actions->history());
         EXPECT_EQ(param, m_mock_actions->id());
     }

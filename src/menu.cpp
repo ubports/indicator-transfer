@@ -37,8 +37,8 @@ namespace transfer {
 ****/
 
 Menu::Menu (Profile profile_in, const char* name_in):
-    m_profile(profile_in),
-    m_name(name_in)
+    m_profile{profile_in},
+    m_name{name_in}
 {
 }
 
@@ -76,7 +76,7 @@ protected:
     {
         // initialize the menu
         create_gmenu();
-        for (int i=0; i<NUM_SECTIONS; i++)
+        for (int i=0; i<(int)NUM_SECTIONS; i++)
             update_section(Section(i));
 
         // listen for state changes so we can update the menu accordingly
@@ -133,13 +133,13 @@ private:
         // build placeholders for the sections
         for(int i=0; i<NUM_SECTIONS; i++)
         {
-            GMenuItem * item = g_menu_item_new(nullptr, nullptr);
+            auto item = g_menu_item_new(nullptr, nullptr);
             g_menu_append_item(m_submenu, item);
             g_object_unref(item);
         }
 
         // add submenu to the header
-        const auto detailed_action = (std::string("indicator.") + name()) + "-header";
+        const auto detailed_action = (std::string{"indicator."} + name()) + "-header";
         auto header = g_menu_item_new(nullptr, detailed_action.c_str());
         g_menu_item_set_attribute(header, "x-canonical-type", "s",
                                   "com.canonical.indicator.root");
@@ -158,7 +158,7 @@ private:
     {
         const auto& id = transfer->id().c_str();
         auto menu_item = g_menu_item_new (transfer->id().c_str(), nullptr);
-        //g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", "com.canonical.indicator.transfer");
+        g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", "com.canonical.indicator.transfer");
         g_menu_item_set_attribute (menu_item, "x-canonical-state", "i", transfer->state().get());
         g_menu_item_set_attribute (menu_item, "x-canonical-uid", "s", id);
         g_menu_item_set_attribute (menu_item, "x-canonical-time", "x", transfer->last_active().get());
@@ -265,7 +265,7 @@ protected:
                   const char* name_,
                   const std::shared_ptr<Transfers>& transfers_,
                   const std::shared_ptr<GActions>& gactions_):
-        MenuImpl(profile_, name_, transfers_, gactions_)
+        MenuImpl{profile_, name_, transfers_, gactions_}
     {
         update_header();
     }
@@ -277,7 +277,7 @@ class PhoneMenu: public PhoneBaseMenu
 public:
     PhoneMenu(const std::shared_ptr<Transfers>& transfers_,
               const std::shared_ptr<GActions>& actions_):
-        PhoneBaseMenu(PHONE, profile_names[PHONE], transfers_, actions_) {}
+        PhoneBaseMenu{PHONE, profile_names[PHONE], transfers_, actions_} {}
 };
 
 /****
@@ -286,8 +286,8 @@ public:
 
 MenuFactory::MenuFactory(const std::shared_ptr<Transfers>& transfers_,
                          const std::shared_ptr<GActions>& gactions_):
-    m_transfers(transfers_),
-    m_gactions(gactions_)
+    m_transfers{transfers_},
+    m_gactions{gactions_}
 {
 }
 
@@ -299,7 +299,7 @@ MenuFactory::buildMenu(Menu::Profile profile)
     switch (profile)
     {
     case Menu::PHONE:
-        menu.reset(new PhoneMenu(m_transfers, m_gactions));
+        menu.reset(new PhoneMenu{m_transfers, m_gactions});
         break;
 
     default:

@@ -44,18 +44,18 @@ main(int /*argc*/, char** /*argv*/)
 
     // create the TransfersController
     // FIXME: mock transfers, for now
-    std::shared_ptr<Transfers> transfers (new Transfers);
-    std::shared_ptr<MockTransferController> mock_transfer_controller (new MockTransferController(transfers));
-    std::shared_ptr<MockTransfer> mock_transfer(new MockTransfer ("aaa", "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg")); 
+    std::shared_ptr<Transfers> transfers {new Transfers};
+    std::shared_ptr<MockTransferController> mock_transfer_controller {new MockTransferController(transfers)};
+    std::shared_ptr<MockTransfer> mock_transfer{new MockTransfer {"aaa", "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg"}}; 
     mock_transfer_controller->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
 
     // create the Actions and the GActions bridge
-    std::shared_ptr<Actions> actions (new LiveActions(transfers));
-    std::shared_ptr<GActions> gactions(new GActions(actions));
+    std::shared_ptr<Actions> actions {new LiveActions{transfers}};
+    std::shared_ptr<GActions> gactions {new GActions{actions}};
 
     // create the Menus
     std::vector<std::shared_ptr<Menu>> menus;
-    MenuFactory menu_factory (transfers, gactions);
+    MenuFactory menu_factory {transfers, gactions};
     for(int i=0; i<Menu::NUM_PROFILES; i++)
       menus.push_back(menu_factory.buildMenu(Menu::Profile(i)));
 
