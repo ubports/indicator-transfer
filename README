@@ -25,14 +25,23 @@ ACTIONS
    State: None
    Parameter: None
 
+ * "transfer-states"
+   Description: The transfers' mutable information; e.g. state and progress
+   State: Dictionary containing key/value pairs of transfer uids strings to
+          a per-transfer dictionary.
+          The inner, per-transfer dictionaries will have key/value pairs for
+           * "last-activity"  x the date of the last transfer activity
+           * "percent"        d perent of the progress copmlete, [0.0 ... 1.0]
+           * "state"          i int value matching the Transfer::State enum
+   Parameter: none. invoking this action has no effect.
+
 
 CUSTOM MENUITEMS
 ================
 
  * Transfer
    - x-canonical-type         s "com.canonical.indicator.transfer"
-   - x-canonical-state        i int value matching the Transfer::State enum
    - x-canonical-uid          s the transfer's unique identifier string
-   - x-canonical-time         x the date of the last activity
-
+   - icon                     v the icon for the app receiving the download
+   - label                    s human-readable string describing the transfer
 
