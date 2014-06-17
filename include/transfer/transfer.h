@@ -33,27 +33,45 @@ namespace unity {
 namespace indicator {
 namespace transfer {
 
+/**
+ * \brief Plain Old Data Structure representing a single Transfer
+ */
 struct Transfer
 {
-    virtual ~Transfer() =default;
+  typedef enum { QUEUED, RUNNING, PAUSED, CANCELED,
+                 HASHING, PROCESSING, FINISHED,
+                 ERROR } State;
+  State state = QUEUED;
+  bool can_start() const { return state==QUEUED; }
+  bool can_resume() const { return state==PAUSED || state==CANCELED || state==ERROR; }
+  bool can_pause() const { return state==RUNNING || state==HASHING || state==PROCESSING; }
+  bool can_cancel() const { return state!=FINISHED; }
+  bool can_clear() const { return state==FINISHED; }
 
-    typedef std::string Id;
-    virtual Id id() const =0;
-    virtual GIcon* icon() const =0;
-    virtual core::Property<time_t>& last_active() =0;
+  // -1 == unknown
+  int seconds_left = -1;
 
-    typedef enum { STARTING, RUNNING, CANCELING, PAUSED, DONE, FAILED } State;
-    virtual core::Property<State>& state() =0;
+  time_t time_started = 0;
 
-    virtual void cancel() =0;
-    virtual void clear() =0;
-    virtual void open() =0;
-    virtual void pause() =0;
-    virtual void resume() =0;
+  // [0...1]
+  float progress = 0.0;
+
+  uint64_t speed_bps = 0;
+
+  uint64_t total_size = 0;
+
+  typedef std::string Id;
+  Id id;
+  std::string title;
+  std::string app_icon;
+
+  // meaningful iff state is ERROR
+  std::string error_string;
+
+  // meaningful iff state is FINISHED
+  std::string local_path;
 };
-
-typedef core::Property<std::vector<std::shared_ptr<Transfer>>> Transfers;
-
+    
 } // namespace transfer
 } // namespace indicator
 } // namespace unity

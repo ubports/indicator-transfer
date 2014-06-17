@@ -17,9 +17,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/transfer-controller-mock.h>
-
-#include <algorithm>
+#include <transfer/view.h>
 
 namespace unity {
 namespace indicator {
@@ -29,31 +27,8 @@ namespace transfer {
 ****
 ***/
 
-MockTransferController::MockTransferController(const std::shared_ptr<Transfers>& transfers):
-    TransferController(transfers)
+View::~View()
 {
-}
-
-MockTransferController::~MockTransferController()
-{
-}
-
-void
-MockTransferController::add(const std::shared_ptr<Transfer>& transfer)
-{
-    auto tmp = m_transfers->get();
-    tmp.push_back(transfer);
-    m_transfers->set(tmp);
-}
-
-void
-MockTransferController::remove(const Transfer::Id& id)
-{
-    auto predicate = [id](const std::shared_ptr<Transfer>& t){return t->id()==id;};
-    auto tmp = m_transfers->get();
-    auto new_end = std::remove_if (tmp.begin(), tmp.end(), predicate);
-    tmp.erase(new_end, tmp.end());
-    m_transfers->set(tmp);
 }
 
 /***

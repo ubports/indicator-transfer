@@ -1,8 +1,5 @@
 /*
- * Copyright 2013 Canonical Ltd.
- *
- * Authors:
- *   Charles Kerr <charles.kerr@canonical.com>
+ * Copyright 2014 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -15,13 +12,15 @@
  *
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authors:
+ *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/actions-live.h> 
-#include <transfer/exporter.h>
-#include <transfer/menu.h>
-#include <transfer/transfer-mock.h>
-#include <transfer/transfer-controller-mock.h>
+#include <transfer/controller.h>
+#include <transfer/model.h>
+#include <transfer/view-gmenu.h>
+#include <transfer/world-dbus.h>
 
 #include <glib/gi18n.h> // bindtextdomain()
 #include <gio/gio.h>
@@ -42,31 +41,14 @@ main(int /*argc*/, char** /*argv*/)
     bindtextdomain(GETTEXT_PACKAGE, GNOMELOCALEDIR);
     textdomain(GETTEXT_PACKAGE);
 
-    // create the TransfersController
-    // FIXME: mock transfers, for now
-    std::shared_ptr<Transfers> transfers {new Transfers};
-    std::shared_ptr<MockTransferController> mock_transfer_controller {new MockTransferController(transfers)};
-    std::shared_ptr<MockTransfer> mock_transfer{new MockTransfer {"aaa", "/usr/share/icons/ubuntu-mobile/status/scalable/battery_charged.svg"}}; 
-    mock_transfer_controller->add (std::dynamic_pointer_cast<Transfer>(mock_transfer));
-
-    // create the Actions and the GActions bridge
-    std::shared_ptr<Actions> actions {new LiveActions{transfers}};
-    std::shared_ptr<GActions> gactions {new GActions{actions}};
-
-    // create the Menus
-    std::vector<std::shared_ptr<Menu>> menus;
-    MenuFactory menu_factory {transfers, gactions};
-    for(int i=0; i<Menu::NUM_PROFILES; i++)
-      menus.push_back(menu_factory.buildMenu(Menu::Profile(i)));
-
-    // export 'em and run until we lose the busname
     auto loop = g_main_loop_new(nullptr, false);
-    Exporter exporter;
-    exporter.name_lost.connect([loop](){
-        g_message("%s exiting; failed/lost bus ownership", GETTEXT_PACKAGE);
-        g_main_loop_quit(loop);
-    });
-    exporter.publish(gactions, menus);
+
+    // run until we lose the busname
+    auto model = std::make_shared<MutableModel>();
+    auto world = std::shared_ptr<World>(new DBusWorld(model));
+    auto controller = std::make_shared<Controller>(model, world);
+    GMenuView menu_view (model, controller);
+    // FIXME: listen for busname-lost
     g_main_loop_run(loop);
 
     // cleanup

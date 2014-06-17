@@ -11,9 +11,7 @@ Build-Depends: cmake,
 # for tests
                cppcheck,
                libgtest-dev,
-               libdbustest1-dev,
-               dbus-test-runner,
-               python3-dbusmock,
+               google-mock (>= 1.6.0+svn437),
 # for packaging
                debhelper (>= 9), 
                dh-translations,

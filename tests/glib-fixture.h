@@ -1,8 +1,5 @@
 /*
- * Copyright 2013 Canonical Ltd.
- *
- * Authors:
- *   Charles Kerr <charles.kerr@canonical.com>
+ * Copyright 2014 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -15,6 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authors:
+ *   Charles Kerr <charles.kerr@canonical.com>
  */
 
 #include <map>
@@ -71,7 +71,7 @@ class GlibFixture : public ::testing::Test
 
   protected:
 
-    void increment_expected_errors(GLogLevelFlags level, int n=1)
+    void increment_expected_errors(GLogLevelFlags level, size_t n=1)
     {
       expected_log[level] += n;
     }
@@ -115,7 +115,7 @@ class GlibFixture : public ::testing::Test
   protected:
 
     /* convenience func to loop while waiting for a GObject's signal */
-    void wait_for_signal(gpointer o, const gchar * signal, const int timeout_seconds=5)
+    void wait_for_signal(gpointer o, const gchar * signal, const guint timeout_seconds=5)
     {
       // wait for the signal or for timeout, whichever comes first
       const auto handler_id = g_signal_connect_swapped(o, signal,
@@ -130,7 +130,7 @@ class GlibFixture : public ::testing::Test
     }
 
     /* convenience func to loop for N msec */
-    void wait_msec(int msec=50)
+    void wait_msec(guint msec=50)
     {
       const auto id = g_timeout_add(msec, wait_msec__timeout, loop);
       g_main_loop_run(loop);

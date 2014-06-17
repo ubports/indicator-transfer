@@ -3,26 +3,17 @@ set (SERVICE_EXEC "indicator-transfer-service")
 
 add_definitions (-DG_LOG_DOMAIN="${CMAKE_PROJECT_NAME}")
 
-# generated source code...
-include (GdbusCodegen)
-set(SERVICE_LIB_GENERATED_SOURCES)
-add_gdbus_codegen(SERVICE_LIB_GENERATED_SOURCES dbus-transfer
-                  com.ubuntu
-                  ${CMAKE_CURRENT_SOURCE_DIR}/com.ubuntu.content.Transfer.xml)
-
 # handwritten source code...
 set (SERVICE_LIB_HANDWRITTEN_SOURCES
-     actions-live.cpp
-     exporter.cpp
-     gactions.cpp
-     menu.cpp
-     transfer-mock.cpp
-     transfer-controller.cpp
-     transfer-controller-mock.cpp)
+     controller.cpp
+     model.cpp
+     view.cpp
+     view-gmenu.cpp
+     world.cpp
+     world-dbus.cpp)
 
 add_library (${SERVICE_LIB} STATIC
-             ${SERVICE_LIB_HANDWRITTEN_SOURCES}
-             ${SERVICE_LIB_GENERATED_SOURCES})
+             ${SERVICE_LIB_HANDWRITTEN_SOURCES})
 
 # add the bin dir to the include path so that
 # the compiler can find the generated header files

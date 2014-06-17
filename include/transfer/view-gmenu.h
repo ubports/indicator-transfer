@@ -17,33 +17,35 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_ACTIONS_H
-#define INDICATOR_TRANSFER_ACTIONS_H
+#ifndef INDICATOR_TRANSFER_VIEW_GMENU_H
+#define INDICATOR_TRANSFER_VIEW_GMENU_H
 
-#include <transfer/transfer.h>
+#include <core/signal.h>
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
 /**
- * \brief Interface for all the actions that can be activated by users.
+ * \brief a View that exports GActions and GMenus onto the DBus
  */
-class Actions
+class GMenuView
 {
 public:
-    virtual void pause_all() =0;
-    virtual void resume_all() =0;
-    virtual void clear_all() =0;
-    virtual void activate(const Transfer::Id&) =0;
-    virtual void pause(const Transfer::Id&) =0;
-    virtual void cancel(const Transfer::Id&) =0;
-    virtual void resume(const Transfer::Id&) =0;
-    virtual ~Actions() =default;
+  GMenuView(const std::shared_ptr<Model>& model,
+            const std::shared_ptr<Controller>& controller);
+  ~GMenuView();
+  void set_controller(const std::shared_ptr<Controller>&);
+  void set_model(const std::shared_ptr<Model>&);
+  const core::Signal<>& name_lost() const;
+
+private:
+  class Impl;
+  std::unique_ptr<Impl> p;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_ACTIONS_H
+#endif // INDICATOR_TRANSFER_VIEW_GMENU_H

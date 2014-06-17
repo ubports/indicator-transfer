@@ -49,7 +49,12 @@ add_custom_target (cppcheck COMMAND cppcheck --enable=all -q --error-exitcode=2 
 ##  Actually building the service
 ##
 
-set (CXX_WARNING_ARGS " -Wall -Wno-missing-field-initializers -Wextra -pedantic")
+# those GActionEntry structs tickle -Wmissing-field-initializers
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set (CXX_WARNING_ARGS "${CXX_WARNING_ARGS} -Weverything -Wno-c++98-compat -Wno-missing-field-initializers")
+else()
+  set (CXX_WARNING_ARGS "${CXX_WARNING_ARGS} -Wall -Wextra -Wpedantic -Wno-missing-field-initializers")
+endif()
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories (${CMAKE_CURRENT_BINARY_DIR}/include)

@@ -17,43 +17,36 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_ACTIONS_LIVE_H
-#define INDICATOR_TRANSFER_ACTIONS_LIVE_H
+#ifndef INDICATOR_TRANSFER_WORLD_H
+#define INDICATOR_TRANSFER_WORLD_H
 
-#include <transfer/actions.h>
+#include <transfer/model.h>
+#include <transfer/transfer.h> // Id
 
-#include <transfer/transfer.h>
-
-#include <memory>
+#include <memory> // std::shared_ptr
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
 /**
- * \brief Interface for all the actions that can be activated by users.
+ * \brief Facade for everything outside of indicator-transfer
  */
-class LiveActions: public Actions
+class World
 {
 public:
-    LiveActions(std::shared_ptr<Transfers>& transfers);
-    ~LiveActions();
+    virtual ~World();
 
-    void pause_all();
-    void resume_all();
-    void clear_all();
-    void activate(const Transfer::Id&);
-    void pause(const Transfer::Id&);
-    void cancel(const Transfer::Id&);
-    void resume(const Transfer::Id&);
-
-private:
-    std::shared_ptr<Transfer> find_transfer_by_id(const Transfer::Id&) const;
-    std::shared_ptr<Transfers> m_transfers;
+    virtual void open(const Transfer::Id& id) =0;
+    virtual void start(const Transfer::Id& id) =0;
+    virtual void pause(const Transfer::Id& id) =0;
+    virtual void resume(const Transfer::Id& id) =0;
+    virtual void cancel(const Transfer::Id& id) =0;
+    virtual void open_app(const Transfer::Id& id) =0;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_ACTIONS_LIVE_H
+#endif // INDICATOR_TRANSFER_WORLD_H

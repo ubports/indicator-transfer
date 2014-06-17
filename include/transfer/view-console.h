@@ -17,27 +17,40 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_TRANSFER_CONTROLLER_MOCK_H
-#define INDICATOR_TRANSFER_TRANSFER_CONTROLLER_MOCK_H
+#ifndef INDICATOR_TRANSFER_VIEW_CONSOLE_H
+#define INDICATOR_TRANSFER_VIEW_CONSOLE_H
 
-#include <transfer/transfer-controller.h>
+#include <transfer/view.h>
+
+#include <core/connection.h>
+
+#include <memory> // shared_ptr
+#include <set>
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
-struct MockTransferController: public TransferController
+/**
+ * \brief a debugging view that dumps output to the console
+ */
+class ConsoleView: public View
 {
 public:
-    MockTransferController(const std::shared_ptr<Transfers>& transfers);
-    ~MockTransferController();
+    ConsoleView(const std::shared_ptr<Model>&, const std::shared_ptr<Controller>&);
+    ~ConsoleView();
+    void set_controller(const std::shared_ptr<Controller>&);
+    void set_model(const std::shared_ptr<Model>&);
 
-    void add(const std::shared_ptr<Transfer>& transfer);
-    void remove(const Transfer::Id&);
+private:
+    std::shared_ptr<Model> m_model;
+    std::shared_ptr<Controller> m_controller;
+    std::set<core::ScopedConnection> m_connections;
+    static gboolean on_timer (gpointer);
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_TRANSFER_CONTROLLER_MOCK_H
+#endif // INDICATOR_TRANSFER_VIEW_H

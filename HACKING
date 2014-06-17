@@ -5,6 +5,8 @@ Building the code
  3. $ cd build
  4. $ cmake ..
     or
+    $ CXX=clang++ CC=clang cmake ..
+    or
     $ cmake -DCMAKE_INSTALL_PREFIX=/your/install/prefix/here ..
     or
     $ cmake -GNinja ..
@@ -36,12 +38,4 @@ What Gets Installed
  * $DATADIR/share/unity/indicators/com.canonical.indicator.transfer
  * $PKGLIBEXECDIR/indicator-transfer/indicator-transfer-service
  * /etc/xdg/autostart/indicator-transfer.desktop
-
--- Installing: /usr/share/upstart/sessions/indicator-transfer.conf
--- Installing: /etc/xdg/autostart/indicator-transfer.desktop
--- Installing: /usr/share/upstart/xdg/autostart/indicator-transfer.desktop
--- Installing: /usr/share/unity/indicators/com.canonical.indicator.transfer
--- Installing: /usr/lib/i386-linux-gnu/indicator-transfer/indicator-transfer-service
-
-
 

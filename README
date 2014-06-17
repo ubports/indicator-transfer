@@ -3,9 +3,8 @@ ACTIONS
 
  * "activate-transfer"
    Description: default action when tapping a transfer menuitem.
-   If the transfer completed, clicking opens the destination application
-   (eg, tapping on a listitem to view a picture in the Gallery).
-   If the transfer failed or is paused, activation tries again.
+   For example, tapping a running transfer pauses it. Tapping a paused
+   transfer resumes it.
    State: None
    Parameter: s an opaque uid to specify which transer to use.
                 This uid comes from the menuitems' x-canonical-uid property.
@@ -13,6 +12,8 @@ ACTIONS
  * "cancel-transfer"
  * "pause-transfer"
  * "resume-transfer"
+ * "open-transfer"
+ * "open-app-transfer"
    Description: actions that operate on a single transfer.
    State: None
    Parameter: s an opaque uid to specify which transer to use.
@@ -30,9 +31,9 @@ ACTIONS
    State: Dictionary containing key/value pairs of transfer uids strings to
           a per-transfer dictionary.
           The inner, per-transfer dictionaries will have key/value pairs for
-           * "last-activity"  x the date of the last transfer activity
-           * "percent"        d perent of the progress copmlete, [0.0 ... 1.0]
-           * "state"          i int value matching the Transfer::State enum
+           * "percent"      d percent of the progress complete, [0.0 ... 1.0]
+           * "seconds-left" i percent done. NB: Not set if no ETA is available.
+           * "state"        i int value matching the Transfer::State enum
    Parameter: none. invoking this action has no effect.
 
 

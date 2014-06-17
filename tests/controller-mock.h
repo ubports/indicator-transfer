@@ -17,40 +17,38 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_GACTIONS_H
-#define INDICATOR_TRANSFER_GACTIONS_H
+#ifndef INDICATOR_TRANSFER_CONTROLLER_MOCK_H
+#define INDICATOR_TRANSFER_CONTROLLER_MOCK_H
 
-#include <transfer/actions.h>
+#include <transfer/controller.h> // parent class
 
-#include <memory> // shared_ptr
+#include "gmock/gmock.h"
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
-/**
- * \brief Mediator to couple our Actions class with a GActionGroup exported on the bus.
- */
-class GActions
+class MockController: public Controller
 {
 public:
-    GActions(const std::shared_ptr<Actions>& actions);
-    ~GActions();
+  MockController(const std::shared_ptr<MutableModel>& model, 
+                 const std::shared_ptr<World>& world):
+    Controller(model, world) {}
 
-    GActionGroup* action_group() const;
-    std::shared_ptr<Actions>& actions();
-
-private:
-    GSimpleActionGroup* m_action_group = nullptr;
-    std::shared_ptr<Actions> m_actions;
-
-    // we've got raw pointers in here, so disable copying
-    GActions(const Actions&) =delete;
-    GActions& operator=(const Actions&) =delete;
+  MOCK_METHOD0(pause_all, void());
+  MOCK_METHOD0(resume_all, void());
+  MOCK_METHOD0(clear_all, void());
+  MOCK_METHOD1(tap, void(const Transfer::Id&));
+  MOCK_METHOD1(start, void(const Transfer::Id&));
+  MOCK_METHOD1(pause, void(const Transfer::Id&));
+  MOCK_METHOD1(cancel, void(const Transfer::Id&));
+  MOCK_METHOD1(resume, void(const Transfer::Id&));
+  MOCK_METHOD1(open, void(const Transfer::Id&));
+  MOCK_METHOD1(open_app, void(const Transfer::Id&));
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_GACTIONS_H
+#endif // INDICATOR_TRANSFER_CONTROLLER_MOCK_H

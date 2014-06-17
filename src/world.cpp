@@ -17,7 +17,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/transfer-controller.h>
+#include <transfer/world.h>
 
 namespace unity {
 namespace indicator {
@@ -27,14 +27,10 @@ namespace transfer {
 ****
 ***/
 
-TransferController::TransferController (const std::shared_ptr<Transfers>& transfers):
-    m_transfers(transfers)
+World::~World()
 {
 }
 
-TransferController::~TransferController()
-{
-}
 
 /***
 ****
@@ -43,4 +39,3 @@ TransferController::~TransferController()
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
-
