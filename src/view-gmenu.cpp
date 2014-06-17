@@ -498,12 +498,17 @@ private:
 
     // add the bulk actions menuitem ("Resume all" or "Pause all")
     int n_can_resume = 0;
+    int n_can_pause = 0;
     for (const auto& t : transfers)
-      if (t->can_resume())
-        ++n_can_resume;
+      {
+        if (t->can_resume())
+          ++n_can_resume;
+        else if (t->can_pause())
+          ++n_can_pause;
+      }
     if (n_can_resume > 0)
       append_bulk_action_menuitem(menu, _("Resume all"), "indicator.resume-all");
-    else
+    else if (n_can_pause > 0)
       append_bulk_action_menuitem(menu, _("Pause all"), "indicator.pause-all");
 
     // add the transfers
@@ -535,7 +540,9 @@ private:
     if (transfers.size() > max_items)
       transfers.erase(transfers.begin()+max_items, transfers.end());
 
-    append_bulk_action_menuitem(menu, _("Clear all"), "indicator.clear-all");
+    // if there are any successful transfers, show the 'Clear all' button
+    if (!transfers.empty())
+      append_bulk_action_menuitem(menu, _("Clear all"), "indicator.clear-all");
 
     // add the transfers
     for (const auto& t : transfers)

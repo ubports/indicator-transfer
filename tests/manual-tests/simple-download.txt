@@ -20,8 +20,14 @@ Steps:
    [ ] When the last transfer finishes, the header changes to
        indicate that the download manager is idle
 
+   [ ] When the last transfer finishes, the 'Ongoing Tranfers'
+       section's bulk action button should disappear.
+
 4. After the transfers finish, press the 'Clear all' button.
 
    [ ] 'Clear all' should remove all three completed transfers from
        the 'Successful Transfers' section of the menu.
+
+   [ ] After the transfers are cleared, the section's
+       bulk action button should disappear.
 
