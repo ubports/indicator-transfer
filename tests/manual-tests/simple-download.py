@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 # source: https://wiki.ubuntu.com/DownloadService/DownloadManager#Code_Examples
 
 import gobject
