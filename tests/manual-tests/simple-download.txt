@@ -1,16 +1,5 @@
 Steps:
 
-0. NB: the transfer menuitems may not be visible until the menuitem
-   x-canonical-type "com.canonical.indicator.transfer" is supported
-   by the renderer. Until then, if you're willing and able to build
-   manually, you can force them to look like normal menuitems by
-   removing these two lines from src/view-gmenu.cpp's
-   create_transfer_menuitem():
-
-   > g_menu_item_set_attribute (menu_item, "x-canonical-type",
-   >                            "s", "com.canonical.indicator.transfer");
-
-
 1. Start the new build of indicator-transfer-service
 
 2. Run "$python2 tests/manual-tests/simple-download.py"

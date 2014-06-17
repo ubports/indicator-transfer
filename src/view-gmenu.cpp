@@ -501,13 +501,10 @@ private:
     for (const auto& t : transfers)
       if (t->can_resume())
         ++n_can_resume;
-    GMenuItem* menu_item;
     if (n_can_resume > 0)
-      menu_item = g_menu_item_new(_("Resume all"), "indicator.resume-all");
+      append_bulk_action_menuitem(menu, _("Resume all"), "indicator.resume-all");
     else
-      menu_item = g_menu_item_new(_("Pause all"), "indicator.pause-all");
-    g_menu_append_item(menu, menu_item);
-    g_object_unref(menu_item);
+      append_bulk_action_menuitem(menu, _("Pause all"), "indicator.pause-all");
 
     // add the transfers
     for (const auto& t : transfers)
@@ -538,10 +535,7 @@ private:
     if (transfers.size() > max_items)
       transfers.erase(transfers.begin()+max_items, transfers.end());
 
-    // add the bulk actions menuitem ("Clear all" or "Pause all")
-    auto menu_item = g_menu_item_new(_("Clear all"), "indicator.clear-all");
-    g_menu_append_item(menu, menu_item);
-    g_object_unref(menu_item);
+    append_bulk_action_menuitem(menu, _("Clear all"), "indicator.clear-all");
 
     // add the transfers
     for (const auto& t : transfers)
@@ -594,7 +588,31 @@ private:
     return create_image_missing_icon();
   }
 
-  GVariant* create_image_missing_icon() // FIXME: this is a placeholder
+  void append_bulk_action_menuitem(GMenu* menu,
+                                   const char* label,
+                                   const char* detailed_action)
+  {
+    auto menuitem = create_bulk_action_menuitem(label, detailed_action);
+    g_menu_append_item(menu, menuitem);
+    g_object_unref(menuitem);
+  }
+
+  GMenuItem* create_bulk_action_menuitem(const char* label,
+                                         const char* detailed_action)
+  {
+    auto menu_item = g_menu_item_new(label, detailed_action);
+    const char * type = "com.canonical.indicator.transfer-bulk-action";
+    g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", type);
+    return menu_item;
+  }
+
+  /***
+  ****
+  ***/
+
+  // FIXME: this is a placeholder.
+  // remove it when we have real icons for (a) the header and (b) the menuitems
+  GVariant* create_image_missing_icon()
   {
     auto icon = g_themed_icon_new("image-missing");
     auto v = g_icon_serialize(icon);

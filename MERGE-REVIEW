@@ -1,6 +1,23 @@
 This documents the expections that the project has on what both submitters
 and reviewers should ensure that they've done for a merge into the project.
 
+= IMPORTANT NOTICE =
+
+ The menu items may not be visible until the x-canonical-types
+ "com.canonical.indicator.transfer" and "com.canonical.indicator.bulk-action"
+ are supported by the renderer. Until then, if you're willing to build
+ manually, you can force them to look like normal menuitems by removing these
+ two lines from src/view-gmenu.cpp's create_transfer_menuitem():
+
+  > g_menu_item_set_attribute (menu_item, "x-canonical-type",
+  >                            "s", "com.canonical.indicator.transfer");
+
+ and these two lines from the same file's create_bulk_action_menuitem():
+
+  > const char * type = "com.canonical.indicator.transfer-bulk-action";
+  > g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", type);
+
+
 == Submitter Responsibilities ==
 
  * Ensure the project compiles and the test suite executes without error

@@ -40,9 +40,18 @@ ACTIONS
 CUSTOM MENUITEMS
 ================
 
+See https://docs.google.com/a/canonical.com/document/d/1OyHUg_uUfmhDNa-9UrMc1tZ_eH_99PEU_V2l1YFA1UY/edit#
+for visual mockups of how these should look.
+
  * Transfer
    - x-canonical-type         s "com.canonical.indicator.transfer"
    - x-canonical-uid          s the transfer's unique identifier string
    - icon                     v the icon for the app receiving the download
    - label                    s human-readable string describing the transfer
+
+ * Bulk Action Menuitem
+   This behaves like a normal text menuitem but is rendered differently;
+   see the the "Pause all" / "Clear all" buttons in the mockup linked above.
+   - x-canonical-type         s "com.canonical.indicator.transfer-bulk-action"
+   - label                    s label
 
