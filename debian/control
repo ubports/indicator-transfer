@@ -27,9 +27,6 @@ Package: indicator-transfer
 Architecture: any
 Depends: ${shlibs:Depends}, 
          ${misc:Depends},
-         systemd-services,
-         systemd-shim,
 Recommends: indicator-applet | indicator-renderer,
-            unity-control-center (>= 14.04.3) | ubuntu-system-settings,
 Description: Shows Transfers
  Show file/data transfers in the indicator bar
