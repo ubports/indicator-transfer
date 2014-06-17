@@ -68,38 +68,54 @@ public:
   {
     g_return_if_fail (can_pause());
     
-    call_method_no_args_no_response ("pause");
+    call_method_no_args_no_response("pause");
   }
 
   void resume()
   {
-    g_return_if_fail (can_resume());
+    g_return_if_fail(can_resume());
 
-    call_method_no_args_no_response ("resume");
+    call_method_no_args_no_response("resume");
   }
 
   void cancel()
   {
-    call_method_no_args_no_response ("cancel");
+    call_method_no_args_no_response("cancel");
   }
 
-  void handle_signal (const gchar* signal_name, GVariant* parameters)
+  // the 'started', 'paused', 'resumed', and 'canceled' signals
+  // from com.canonical.applications.Download all have a single
+  // parameter, a boolean success flag.
+  bool get_signal_success_arg(GVariant* parameters)
+  {
+    gboolean success = false;
+    g_return_val_if_fail(g_variant_is_container(parameters), false);
+    g_return_val_if_fail(g_variant_n_children(parameters) == 1, false);
+    g_variant_get_child(parameters, 0, "b", &success);
+    return success;
+  }
+
+  void handle_signal(const gchar* signal_name, GVariant* parameters)
   {
     if (!g_strcmp0(signal_name, "started"))
       {
-        set_state(RUNNING);
+        if (get_signal_success_arg(parameters))
+          set_state(RUNNING);
       }
     else if (!g_strcmp0(signal_name, "paused"))
       {
-        set_state(PAUSED);
+        if (get_signal_success_arg(parameters))
+          set_state(PAUSED);
       }
     else if (!g_strcmp0(signal_name, "resumed"))
       {
-        set_state(RUNNING);
+        if (get_signal_success_arg(parameters))
+          set_state(RUNNING);
       }
     else if (!g_strcmp0(signal_name, "canceled"))
       {
-        set_state(CANCELED);
+        if (get_signal_success_arg(parameters))
+          set_state(CANCELED);
       }
     else if (!g_strcmp0(signal_name, "hashing"))
       {
