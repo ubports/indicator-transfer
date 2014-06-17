@@ -28,5 +28,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, 
          ${misc:Depends},
 Recommends: indicator-applet | indicator-renderer,
+            content-hub,
+            ubuntu-download-manager,
 Description: Shows Transfers
  Show file/data transfers in the indicator bar
