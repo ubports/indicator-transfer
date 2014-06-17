@@ -1,0 +1,38 @@
+Steps:
+
+0. NB: the transfer menuitems may not be visible until the menuitem
+   x-canonical-type "com.canonical.indicator.transfer" is supported
+   by the renderer. Until then, if you're willing and able to build
+   manually, you can force them to look like normal menuitems by
+   removing these two lines from src/view-gmenu.cpp's
+   create_transfer_menuitem():
+
+   > g_menu_item_set_attribute (menu_item, "x-canonical-type",
+   >                            "s", "com.canonical.indicator.transfer");
+
+
+1. Start the new build of indicator-transfer-service
+
+2. Run "$python2 tests/manual-tests/simple-download.py"
+
+3. Immediately after launching the script, click or pull down on
+   the indicator so that the menu is visible and its menuitems
+   can be observed.
+
+   [ ] The transfers should initially appear in the 'Ongoing Transfers'
+       section, whose bulk-action button should read 'Pause all'.
+
+   [ ] While active, the transfer indicator's header indicates that
+       there are active transfer(s).
+
+   [ ] As each transfer finishes, it moves from the 'Ongoing'
+       section to the 'Successful Transfers' section
+
+   [ ] When the last transfer finishes, the header changes to
+       indicate that the download manager is idle
+
+4. After the transfers finish, press the 'Clear all' button.
+
+   [ ] 'Clear all' should remove all three completed transfers from
+       the 'Successful Transfers' section of the menu.
+
