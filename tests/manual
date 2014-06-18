@@ -15,9 +15,9 @@ Test-case indicator-transfer/simple-download-check
                     <dd>As the last transfer finishes, the indicator's icon should change to indicate an idle state</dd>
                     <dd>As the last transfer finishes, the 'Pause all' button should disappear</dd>
 
-                    <dt>After all the transfers finish, press the 'Clear all' button.</dt>
-                        <dd>All three transfers should be cleared from the menu.</dd>
-                        <dd>The 'Clear all' button should disappear</dd>
+            <dt>After all the transfers finish, press the 'Clear all' button.</dt>
+                    <dd>All three transfers should be cleared from the menu.</dd>
+                    <dd>The 'Clear all' button should disappear</dd>
 </dt>
 
 <strong>

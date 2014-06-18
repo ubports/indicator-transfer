@@ -22,7 +22,7 @@ and reviewers should ensure that they've done for a merge into the project.
 
  * Ensure the project compiles and the test suite executes without error
  * Ensure that non-obvious code has comments explaining it
- * Ensure the manual tests in tests/manual-tests/ pass
+ * Ensure the manual tests in tests/manual pass
 
 == Reviewer Responsibilities ==
 
