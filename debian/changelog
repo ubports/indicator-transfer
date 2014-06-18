@@ -1,0 +1,5 @@
+indicator-transfer (0.1-0ubuntu1) utopic; urgency=medium
+
+  * Initial release.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 18 Jun 2014 14:29:27 -0500
