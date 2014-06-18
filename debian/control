@@ -10,7 +10,9 @@ Build-Depends: cmake,
                lcov,
 # for tests
                cppcheck,
+               dbus-test-runner,
                libgtest-dev,
+               libdbustest1-dev,
                google-mock (>= 1.6.0+svn437),
 # for packaging
                debhelper (>= 9), 
