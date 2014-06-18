@@ -1,7 +1,7 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 # source: https://wiki.ubuntu.com/DownloadService/DownloadManager#Code_Examples
 
-import gobject
+from gi.repository import GLib
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 
@@ -15,23 +15,23 @@ IMAGE_FILE = 'http://i.imgur.com/y51njgu.jpg'
 
 def download_created(path):
     """Deal with the download created signal."""
-    print 'Download created in %s' % path
+    print('Download created in %s' % path)
 
 
 def finished_callback(path, loop):
     """Deal with the finis signal."""
-    print 'Download performed in "%s"' % path
+    print('Download performed in "%s"' % path)
     loop.quit()
 
 
 def progress_callback(total, progress):
     """Deal with the progress signals."""
-    print 'Progress is %s/%s' % (progress, total)
+    print('Progress is %s/%s' % (progress, total))
 
 if __name__ == '__main__':
 
     bus = dbus.SessionBus()
-    loop = gobject.MainLoop()
+    loop = GLib.MainLoop()
     manager = bus.get_object('com.canonical.applications.Downloader',
             MANAGER_PATH)
     manager_dev_iface = dbus.Interface(manager, dbus_interface=MANAGER_IFACE)
