@@ -1,0 +1,8 @@
+- coverage reports
+- tap-to-open is currently no-op
+- tap-icon-to-open-app is currently a no-op
+- transfer's icon is unknown
+- transfer's title is unknown
+- need ido in order to be visible on desktop
+- need unity8 work in order to be visible on phone
+- missing header icons for 1. idle, 2. active, 3. paused, 4. failed

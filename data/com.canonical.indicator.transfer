@@ -1,0 +1,13 @@
+[Indicator Service]
+Name=indicator-transfer
+ObjectPath=/com/canonical/indicator/transfer
+Position=90
+
+[desktop]
+ObjectPath=/com/canonical/indicator/transfer/phone
+
+[phone]
+ObjectPath=/com/canonical/indicator/transfer/phone
+
+[phone_greeter]
+ObjectPath=/com/canonical/indicator/datetime/phone
