@@ -1,3 +1,16 @@
+indicator-transfer (0.1+14.10.20140619-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * This sets up the code layout, menu, indicator, unit tests, code
+    coverage rules, etc... what you'd expect from an indicator.
+
+  [ Ted Gould ]
+  * README to kick off the repo
+  * Ensure we can build with builddeb
+  * Getting indicator-transfer setup with CI Train
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 19 Jun 2014 02:49:04 +0000
+
 indicator-transfer (0.1-0ubuntu1) utopic; urgency=medium
 
   * Initial release.
