@@ -3,7 +3,6 @@ Section: misc
 Priority: optional
 Maintainer: Ubuntu Desktop Team <ubuntu-desktop@lists.ubuntu.com>
 Build-Depends: cmake,
-               dbus,
                libglib2.0-dev (>= 2.35.4),
                libproperties-cpp-dev,
 # for coverage reports
