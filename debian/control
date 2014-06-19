@@ -10,17 +10,19 @@ Build-Depends: cmake,
                lcov,
 # for tests
                cppcheck,
+               dbus-test-runner,
                libgtest-dev,
+               libdbustest1-dev,
                google-mock (>= 1.6.0+svn437),
 # for packaging
                debhelper (>= 9), 
                dh-translations,
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 Homepage: https://launchpad.net/indicator-transfer
 # If you aren't a member of ~indicator-applet-developers but need to upload
 # packaging changes, just go ahead.  ~indicator-applet-developers will notice
 # and sync up the code again.
-Vcs-Bzr: https://code.launchpad.net/~indicator-applet-developers/indicator-transfer/trunk.13.04
+Vcs-Bzr: lp:indicator-transfer
 Vcs-Browser: https://bazaar.launchpad.net/~indicator-applet-developers/indicator-transfer/trunk.13.04/files
 
 Package: indicator-transfer
