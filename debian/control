@@ -22,7 +22,7 @@ Homepage: https://launchpad.net/indicator-transfer
 # packaging changes, just go ahead.  ~indicator-applet-developers will notice
 # and sync up the code again.
 Vcs-Bzr: lp:indicator-transfer
-Vcs-Browser: https://bazaar.launchpad.net/~indicator-applet-developers/indicator-transfer/trunk.13.04/files
+Vcs-Browser: https://bazaar.launchpad.net/~indicator-applet-developers/indicator-transfer/trunk.14.10/files
 
 Package: indicator-transfer
 Architecture: any
