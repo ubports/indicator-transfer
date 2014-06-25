@@ -42,11 +42,11 @@ struct Transfer
                  HASHING, PROCESSING, FINISHED,
                  ERROR } State;
   State state = QUEUED;
-  bool can_start() const { return state==QUEUED; }
-  bool can_resume() const { return state==PAUSED || state==CANCELED || state==ERROR; }
-  bool can_pause() const { return state==RUNNING || state==HASHING || state==PROCESSING; }
-  bool can_cancel() const { return state!=FINISHED; }
-  bool can_clear() const { return state==FINISHED; }
+  bool can_start() const;
+  bool can_resume() const;
+  bool can_pause() const;
+  bool can_cancel() const;
+  bool can_clear() const;
 
   // -1 == unknown
   int seconds_left = -1;

@@ -31,11 +31,36 @@ namespace transfer {
 
 std::string Transfer::next_unique_id()
 {
-  static unsigned int next = 1;
+  static unsigned int next = 1000;
   char buf[32];
-  std::snprintf(buf, sizeof(buf), "transfer-%u", next);
+  std::snprintf(buf, sizeof(buf), "%u", next);
   ++next;
   return buf;
+}
+
+bool Transfer::can_start() const
+{
+  return state==QUEUED;
+}
+
+bool Transfer::can_resume() const
+{
+  return state==PAUSED || state==CANCELED || state==ERROR;
+}
+
+bool Transfer::can_pause() const
+{
+  return state==RUNNING || state==HASHING || state==PROCESSING;
+}
+
+bool Transfer::can_cancel() const
+{
+  return state!=FINISHED;
+}
+
+bool Transfer::can_clear() const
+{
+  return state==FINISHED;
 }
 
 /***
