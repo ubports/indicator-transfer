@@ -42,7 +42,7 @@ public:
   {
     g_debug("creating a new DBusTransfer for '%s'", object_path);
 
-    id = object_path;
+    id = next_unique_id();
     time_started = time(nullptr);
 
     get_properties_from_bus();
@@ -83,16 +83,9 @@ public:
     call_method_no_args_no_response("cancel");
   }
 
-  // the 'started', 'paused', 'resumed', and 'canceled' signals
-  // from com.canonical.applications.Download all have a single
-  // parameter, a boolean success flag.
-  bool get_signal_success_arg(GVariant* parameters)
+  const std::string& object_path() const
   {
-    gboolean success = false;
-    g_return_val_if_fail(g_variant_is_container(parameters), false);
-    g_return_val_if_fail(g_variant_n_children(parameters) == 1, false);
-    g_variant_get_child(parameters, 0, "b", &success);
-    return success;
+    return m_object_path;
   }
 
   void handle_signal(const gchar* signal_name, GVariant* parameters)
@@ -155,6 +148,18 @@ public:
   }
 
 private:
+
+  // the 'started', 'paused', 'resumed', and 'canceled' signals
+  // from com.canonical.applications.Download all have a single
+  // parameter, a boolean success flag.
+  bool get_signal_success_arg(GVariant* parameters)
+  {
+    gboolean success = false;
+    g_return_val_if_fail(g_variant_is_container(parameters), false);
+    g_return_val_if_fail(g_variant_n_children(parameters) == 1, false);
+    g_variant_get_child(parameters, 0, "b", &success);
+    return success;
+  }
 
   void call_method_no_args_no_response(const char* method_name)
   {
@@ -515,6 +520,29 @@ void DBusWorld::set_bus(GDBusConnection* bus)
     }
 }
 
+namespace
+{
+  std::shared_ptr<DBusTransfer>
+  find_dbus_transfer_for_object_path(const std::shared_ptr<Model>& model,
+                                     const std::string& object_path)
+  {
+    std::shared_ptr<DBusTransfer> dbus_transfer;
+
+    for (const auto& transfer : model->get_all())
+      {
+        const auto tmp = std::static_pointer_cast<DBusTransfer>(transfer);
+
+        if (tmp && (tmp->object_path()==object_path))
+          {
+             dbus_transfer = tmp;
+             break;
+          }
+      }
+
+    return dbus_transfer;
+  }
+}
+
 void DBusWorld::on_download_signal(GDBusConnection*, //connection,
                                   const gchar*,      //sender_name,
                                   const gchar*         object_path,
@@ -525,19 +553,19 @@ void DBusWorld::on_download_signal(GDBusConnection*, //connection,
 {
   auto self = static_cast<DBusWorld*>(gself);
 
-  auto transfer = self->m_model->get(object_path);
-  if (!transfer)
+  auto dbus_transfer = find_dbus_transfer_for_object_path(self->m_model, object_path);
+
+  if (!dbus_transfer)
     {
       g_message("A %s that we didn't know about just emitted signal '%s' -- "
                 "might be a transfer that was here before us?",
                 DOWNLOAD_IFACE_NAME, signal_name);
       self->add_transfer(object_path);
-      transfer = self->m_model->get(object_path);
-      g_return_if_fail (transfer);
+      dbus_transfer = find_dbus_transfer_for_object_path(self->m_model, object_path);
+      g_return_if_fail (dbus_transfer);
     }
 
-  std::static_pointer_cast<DBusTransfer>(transfer)->handle_signal(signal_name,
-                                                                  parameters);
+  dbus_transfer->handle_signal(signal_name, parameters);
 }
 
 void DBusWorld::on_download_created(GDBusConnection*, //connection,
@@ -568,7 +596,7 @@ void DBusWorld::add_transfer(const char* object_path)
   m_model->add(transfer);
 
   // notify the model whenever the Transfer changes
-  const std::string id = object_path;
+  const auto id = dbus_transfer->id;
   dbus_transfer->changed().connect([this,id]{
     if (m_model->get(id))
       m_model->emit_changed(id);

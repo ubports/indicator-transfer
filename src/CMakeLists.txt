@@ -7,6 +7,7 @@ add_definitions (-DG_LOG_DOMAIN="${CMAKE_PROJECT_NAME}")
 set (SERVICE_LIB_HANDWRITTEN_SOURCES
      controller.cpp
      model.cpp
+     transfer.cpp
      view.cpp
      view-gmenu.cpp
      world.cpp

@@ -34,7 +34,7 @@ namespace indicator {
 namespace transfer {
 
 /**
- * \brief Plain Old Data Structure representing a single Transfer
+ * \brief A simple struct representing a single Transfer
  */
 struct Transfer
 {
@@ -70,6 +70,9 @@ struct Transfer
 
   // meaningful iff state is FINISHED
   std::string local_path;
+
+protected:
+  static std::string next_unique_id();
 };
     
 } // namespace transfer
