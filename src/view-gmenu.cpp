@@ -75,31 +75,32 @@ public:
     auto a = g_simple_action_new_stateful("phone-header", nullptr, v);
     g_action_map_add_action(gam, G_ACTION(a));
 
-    // add the transfer-states dictionary
-    v = create_transfer_states();
-    a = g_simple_action_new_stateful("transfer-states", nullptr, v);
-    g_action_map_add_action(gam, G_ACTION(a));
   }
 
   void set_model(const std::shared_ptr<Model>& model)
   {
+    // out with the old...
     auto& c = m_connections;
     c.clear();
+    if (m_model)
+        for (const auto& id : m_model->get_ids())
+          remove(id);
 
+    // ...in with the new
     if ((m_model = model))
       {
-        auto updater = [this](const Transfer::Id&) {update_soon();};
-        c.insert(m_model->added().connect(updater));
-        c.insert(m_model->changed().connect(updater));
-        c.insert(m_model->removed().connect(updater));
-        update_soon();
+        c.insert(m_model->added().connect([this](const Transfer::Id& id){add(id);}));
+        c.insert(m_model->changed().connect([this](const Transfer::Id& id){update(id);}));
+        c.insert(m_model->removed().connect([this](const Transfer::Id& id){remove(id);}));
+
+        // add the transfers
+        for (const auto& id : m_model->get_ids())
+          add(id);
       }
   }
 
   ~GActions()
   {
-    if (m_update_tag)
-      g_source_remove (m_update_tag);
     g_clear_object(&m_action_group);
   }
 
@@ -114,39 +115,35 @@ private:
   ****  TRANSFER STATES
   ***/
 
-  void update_soon()
+  void add(const Transfer::Id& id)
   {
-    if (m_update_tag == 0)
-      m_update_tag = g_timeout_add_seconds(1, update_timeout, this);
+    const auto name = get_transfer_action_name(id);
+    const auto state = create_transfer_state(id);
+    auto a = g_simple_action_new_stateful(name.c_str(), nullptr, state);
+    g_action_map_add_action(action_map(), G_ACTION(a));
   }
 
-  static gboolean update_timeout(gpointer gself)
+  void update(const Transfer::Id& id)
   {
-    auto self = static_cast<GActions*>(gself);
-    self->m_update_tag = 0;
-    self->update();
-    return G_SOURCE_REMOVE;
+    const auto name = get_transfer_action_name(id);
+    const auto state = create_transfer_state(id);
+    g_action_group_change_action_state(action_group(), name.c_str(), state);
   }
 
-  void update()
+  void remove(const Transfer::Id& id)
   {
-    g_action_group_change_action_state(action_group(),
-                                       "transfer-states",
-                                       create_transfer_states());
+    const auto name = get_transfer_action_name(id);
+    g_action_map_remove_action(action_map(), name.c_str());
   }
 
-  GVariant* create_transfer_states()
+  std::string get_transfer_action_name (const Transfer::Id& id)
   {
-    GVariantBuilder b;
-    g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
+    return std::string("transfer-state.") + id;
+  }
 
-    for (const auto& transfer : m_model->get_all())
-      {
-        auto state = create_transfer_state(transfer);
-        g_variant_builder_add(&b, "{sv}", transfer->id.c_str(), state);
-      }
-
-    return g_variant_builder_end(&b);
+  GVariant* create_transfer_state(const Transfer::Id& id)
+  {
+    return create_transfer_state(m_model->get(id));
   }
 
   GVariant* create_transfer_state(const std::shared_ptr<Transfer>& transfer)
@@ -154,15 +151,22 @@ private:
     GVariantBuilder b;
     g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
 
-    g_variant_builder_add(&b, "{sv}", "percent",
-                          g_variant_new_double(transfer->progress));
-    if (transfer->seconds_left >= 0)
+    if (transfer)
       {
-        g_variant_builder_add(&b, "{sv}", "seconds-left",
-                              g_variant_new_int32(transfer->seconds_left));
-      }
+        g_variant_builder_add(&b, "{sv}", "percent",
+                              g_variant_new_double(transfer->progress));
+        if (transfer->seconds_left >= 0)
+          {
+            g_variant_builder_add(&b, "{sv}", "seconds-left",
+                                  g_variant_new_int32(transfer->seconds_left));
+          }
 
-    g_variant_builder_add(&b, "{sv}", "state", g_variant_new_int32(transfer->state));
+        g_variant_builder_add(&b, "{sv}", "state", g_variant_new_int32(transfer->state));
+      }
+    else
+      {
+        g_warn_if_reached();
+      }
 
     return g_variant_builder_end(&b);
   }
@@ -243,11 +247,15 @@ private:
   ****
   ***/
 
+  GActionMap* action_map() const
+  {
+    return G_ACTION_MAP(m_action_group);
+  }
+
   GSimpleActionGroup* m_action_group = nullptr;
   std::shared_ptr<Model> m_model;
   std::shared_ptr<Controller> m_controller;
   std::set<core::ScopedConnection> m_connections;
-  guint m_update_tag = 0;
 
   // we've got raw pointers in here, so disable copying
   GActions(const GActions&) =delete;

@@ -26,14 +26,13 @@ ACTIONS
    State: None
    Parameter: None
 
- * "transfer-states"
-   Description: The transfers' mutable information; e.g. state and progress
-   State: Dictionary containing key/value pairs of transfer uids strings to
-          a per-transfer dictionary.
-          The inner, per-transfer dictionaries will have key/value pairs for
-           * "percent"      d percent of the progress complete, [0.0 ... 1.0]
-           * "seconds-left" i percent done. NB: Not set if no ETA is available.
-           * "state"        i int value matching the Transfer::State enum
+ * "transfer-state.$UID" (where $UID matches the x-canonical-uid properties)
+   Description: An action whose state provides a transfer's transient properties.
+                This is a dict whose key/value pairs are:
+                * "percent"      d percent of the progress complete, [0.0 ... 1.0]
+                * "seconds-left" i percent done. NB: Not set if no ETA is available.
+                * "state"        i int value matching the Transfer::State enum
+                                   from transfer-indicator/include/transfer/transfer.h
    Parameter: none. invoking this action has no effect.
 
 
