@@ -461,7 +461,7 @@ private:
 
   void update_section(Section section)
   {
-    GMenuModel * model = nullptr;;
+    GMenuModel * model = nullptr;
 
     switch (section)
       {
@@ -550,9 +550,9 @@ private:
     // if there are any successful transfers, show the 'Clear all' button
     if (!transfers.empty())
       {
-        const char * label = _("Successful Transfers");
-        const char * extra_label = _("Clear all");
-        const char * action_name = "indicator.clear-all";
+        const char* label = _("Successful Transfers");
+        const char* extra_label = _("Clear all");
+        const char* action_name = "indicator.clear-all";
         append_bulk_action_menuitem(menu, label, extra_label, action_name);
       }
 
