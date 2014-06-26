@@ -461,7 +461,7 @@ private:
 
   void update_section(Section section)
   {
-    GMenuModel * model;
+    GMenuModel * model = nullptr;;
 
     switch (section)
       {
@@ -474,7 +474,6 @@ private:
           break;
 
         case NUM_SECTIONS:
-          model = nullptr;
           g_warn_if_reached();
       }
 
