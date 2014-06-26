@@ -515,9 +515,9 @@ private:
           ++n_can_pause;
       }
     if (n_can_resume > 0)
-      append_bulk_action_menuitem(menu, _("Resume all"), "indicator.resume-all");
+      append_bulk_action_menuitem(menu, nullptr, _("Resume all"), "indicator.resume-all");
     else if (n_can_pause > 0)
-      append_bulk_action_menuitem(menu, _("Pause all"), "indicator.pause-all");
+      append_bulk_action_menuitem(menu, nullptr, _("Pause all"), "indicator.pause-all");
 
     // add the transfers
     for (const auto& t : transfers)
@@ -550,7 +550,12 @@ private:
 
     // if there are any successful transfers, show the 'Clear all' button
     if (!transfers.empty())
-      append_bulk_action_menuitem(menu, _("Clear all"), "indicator.clear-all");
+      {
+        const char * label = _("Successful Transfers");
+        const char * extra_label = _("Clear all");
+        const char * action_name = "indicator.clear-all";
+        append_bulk_action_menuitem(menu, label, extra_label, action_name);
+      }
 
     // add the transfers
     for (const auto& t : transfers)
@@ -605,19 +610,29 @@ private:
 
   void append_bulk_action_menuitem(GMenu* menu,
                                    const char* label,
+                                   const char* extra_label,
                                    const char* detailed_action)
   {
-    auto menuitem = create_bulk_action_menuitem(label, detailed_action);
-    g_menu_append_item(menu, menuitem);
-    g_object_unref(menuitem);
+    auto tmp = create_bulk_action_menuitem(label, extra_label, detailed_action);
+    g_menu_append_item(menu, tmp);
+    g_object_unref(tmp);
   }
 
   GMenuItem* create_bulk_action_menuitem(const char* label,
+                                         const char* extra_label,
                                          const char* detailed_action)
   {
     auto menu_item = g_menu_item_new(label, detailed_action);
-    const char * type = "com.canonical.indicator.transfer-bulk-action";
-    g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", type);
+
+    g_menu_item_set_attribute(menu_item, "x-canonical-type", "s",
+                             "com.canonical.indicator.transfer-bulk-action");
+
+    if (extra_label && *extra_label)
+      {
+        g_menu_item_set_attribute(menu_item, "x-canonical-extra-label",
+                                  "s", extra_label);
+      }
+
     return menu_item;
   }
 
