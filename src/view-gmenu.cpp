@@ -375,15 +375,7 @@ private:
     g_free(action_name);
   }
 
-  // FIXME: see fixme comment for create_header_label()
-  GVariant* create_header_icon()
-  {
-    return create_image_missing_icon();
-  }
-
-  // FIXME: this information is supposed to be given the user via an icon.
-  // since the icons haven't been drawn yet, use a placeholder label instead.
-  GVariant* create_header_label() const
+  GVariant* get_header_icon() const
   {
     int n_in_progress = 0;
     int n_failed = 0;
@@ -414,31 +406,38 @@ private:
           }
       }
 
-    char* str;
+    const char * name;
     if (n_in_progress > 0)
-      str = g_strdup_printf ("%d active", n_in_progress);
+      name = "transfer-progress";
     else if (n_paused > 0)
-      str = g_strdup_printf ("%d paused", n_paused);
+      name = "transfer-paused";
     else if (n_failed > 0)
-      str = g_strdup_printf ("%d failed", n_failed);
+      name = "transfer-error";
     else
-      str = g_strdup_printf ("idle");
+      name = "transfer-none";
 
-    return g_variant_new_take_string(str);
+    auto icon = g_themed_icon_new_with_default_fallbacks(name);
+    auto ret = g_icon_serialize(icon);
+    g_object_unref(icon);
+
+    return ret;
   }
 
   GVariant* create_header_state()
   {
+    auto reffed_icon_v = get_header_icon();
     auto title_v = g_variant_new_string(_("Transfers"));
 
     GVariantBuilder b;
     g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
     g_variant_builder_add(&b, "{sv}", "title", title_v);
-    g_variant_builder_add(&b, "{sv}", "icon", create_header_icon());
-    g_variant_builder_add(&b, "{sv}", "label", create_header_label());
+    g_variant_builder_add(&b, "{sv}", "icon", reffed_icon_v);
     g_variant_builder_add(&b, "{sv}", "accessible-desc", title_v);
     g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(true));
-    return g_variant_builder_end (&b);
+    auto ret = g_variant_builder_end (&b);
+
+    g_variant_unref(reffed_icon_v);
+    return ret;
   }
 
   /***
