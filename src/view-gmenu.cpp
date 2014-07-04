@@ -623,7 +623,7 @@ private:
     auto menu_item = g_menu_item_new(label, detailed_action);
 
     g_menu_item_set_attribute(menu_item, "x-canonical-type", "s",
-                             "com.canonical.indicator.transfer-bulk-action");
+                              "com.canonical.indicator.button-section");
 
     if (extra_label && *extra_label)
       {

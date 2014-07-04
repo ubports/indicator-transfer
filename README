@@ -51,7 +51,7 @@ for visual mockups of how these should look.
  * Bulk Action Menuitem
    This behaves like a normal text menuitem but is rendered differently;
    see the the "Pause all" / "Clear all" buttons in the mockup linked above.
-   - x-canonical-type         s "com.canonical.indicator.transfer-bulk-action"
+   - x-canonical-type         s "com.canonical.indicator.button-section"
    - label                    s label (e.g., "Successful Transfers")
    - x-canonical-extra-label  s action label (e.g., "Clear All")
 
