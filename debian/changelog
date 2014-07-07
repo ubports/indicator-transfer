@@ -1,3 +1,12 @@
+indicator-transfer (0.1+14.10.20140707-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Create per-transfer actions for simpler state lookup by renderers.
+    Previously this was done as a single action that contained a map of
+    unique transfer ids to states.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 07 Jul 2014 22:22:32 +0000
+
 indicator-transfer (0.1+14.10.20140619-0ubuntu1) utopic; urgency=low
 
   [ Charles Kerr ]
