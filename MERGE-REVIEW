@@ -1,32 +1,41 @@
-This documents the expections that the project has on what both submitters
-and reviewers should ensure that they've done for a merge into the project.
+* '''Checklist for component''': indicator-transfer
+ * '''Component Test Plan''': https://wiki.ubuntu.com/Process/Merges/TestPlan/indicator-transfer
+ * '''Trunk URL''': lp:indicator-transfer
+ * '''Ubuntu Package URL (LP)''': http://launchpad.net/ubuntu/+source/indicator-transfer
 
-= IMPORTANT NOTICE =
+This documents the expections that the project has on what submitters,
+reviewers, and landers should ensure that they've done for a merge into
+the project.
 
- The menu items may not be visible until the x-canonical-types
- "com.canonical.indicator.transfer" and "com.canonical.indicator.bulk-action"
- are supported by the renderer. Until then, if you're willing to build
- manually, you can force them to look like normal menuitems by removing these
- two lines from src/view-gmenu.cpp's create_transfer_menuitem():
+The source for this document can be gotten from Bazaar:
+{{{
+$ bzr cat lp:indicator-transfer/MERGE-REVIEW
+}}}
 
-  > g_menu_item_set_attribute (menu_item, "x-canonical-type",
-  >                            "s", "com.canonical.indicator.transfer");
+== MP Submission Checklist Template ==
 
- and these two lines from the same file's create_bulk_action_menuitem():
+'''Note: Please ensure you include the following form filled out and submitted along side your code to the MP ticket.'''
 
-  > const char * type = "com.canonical.indicator.transfer-bulk-action";
-  > g_menu_item_set_attribute (menu_item, "x-canonical-type", "s", type);
+ * Are there any related MPs required for this MP to build/function as expected? Please list.
+ * Is your branch in sync with latest trunk? (e.g. bzr pull lp:trunk -> no changes)
+ * Did the code build without warnings?
+ * Did the tests run successfully?
+ * Did you perform an exploratory manual test run of your code change and any related functionality?
+ * Has your component test plan been executed successfully on emulator or a physical device?
+ * Please list which manual tests are germane for the reviewer in this MP.
 
+== MP Review Checklist Template ==
 
-== Submitter Responsibilities ==
+'''Note: Please ensure you include the following form filled out and submitted along side your code to the MP ticket.'''
 
- * Ensure the project compiles and the test suite executes without error
- * Ensure that non-obvious code has comments explaining it
- * Ensure the manual tests in tests/manual pass
+ * Have you checked that the submitter has accurately filled out the submitter checklist and has taken no shortcuts?
+ * Did you run the manual tests listed by the submitter?
+ * Did you do exploratory testing related to the component you own with the MP changeset included?
+ * If new features have been added, are the manual tests sufficient to cover them?
 
-== Reviewer Responsibilities ==
+== MP Landing Checklist Template ==
 
- * Did the Jenkins build compile? Pass? Run unit tests successfully?
- * Are there appropriate tests to cover any new functionality?
- * Confirm that the manual tests pass
+'''Note: Please ensure you include the following form filled out and submitted along side your code to the MP ticket.'''
+
+ * Ensure that the checklists have been properly filled out by submitter and all reviewers
 

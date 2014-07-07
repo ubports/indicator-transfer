@@ -26,14 +26,13 @@ ACTIONS
    State: None
    Parameter: None
 
- * "transfer-states"
-   Description: The transfers' mutable information; e.g. state and progress
-   State: Dictionary containing key/value pairs of transfer uids strings to
-          a per-transfer dictionary.
-          The inner, per-transfer dictionaries will have key/value pairs for
-           * "percent"      d percent of the progress complete, [0.0 ... 1.0]
-           * "seconds-left" i percent done. NB: Not set if no ETA is available.
-           * "state"        i int value matching the Transfer::State enum
+ * "transfer-state.$UID" (where $UID matches the x-canonical-uid properties)
+   Description: An action whose state provides a transfer's transient properties.
+                This is a dict whose key/value pairs are:
+                * "percent"      d percent of the progress complete, [0.0 ... 1.0]
+                * "seconds-left" i percent done. NB: Not set if no ETA is available.
+                * "state"        i int value matching the Transfer::State enum
+                                   from transfer-indicator/include/transfer/transfer.h
    Parameter: none. invoking this action has no effect.
 
 
@@ -52,5 +51,7 @@ for visual mockups of how these should look.
  * Bulk Action Menuitem
    This behaves like a normal text menuitem but is rendered differently;
    see the the "Pause all" / "Clear all" buttons in the mockup linked above.
-   - x-canonical-type         s "com.canonical.indicator.transfer-bulk-action"
-   - label                    s label
+   - x-canonical-type         s "com.canonical.indicator.button-section"
+   - label                    s label (e.g., "Successful Transfers")
+   - x-canonical-extra-label  s action label (e.g., "Clear All")
+
