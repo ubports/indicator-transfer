@@ -484,23 +484,38 @@ private:
       }
   }
 
-  GMenuModel* create_ongoing_transfers_section()
+  static Section get_transfer_section(const std::shared_ptr<Transfer>& transfer)
   {
-    auto menu = g_menu_new();
+    if (transfer->state == Transfer::FINISHED)
+      return SUCCESSFUL;
+    else
+      return ONGOING;
+  }
 
-    // build a list of the ongoing transfers
-    std::vector<std::shared_ptr<Transfer>> transfers;
-    for (const auto& transfer : m_model->get_all())
-      if (transfer->state != Transfer::FINISHED)
-        transfers.push_back (transfer);
+  std::vector<std::shared_ptr<Transfer>> get_transfers (Section section) const
+  {
+    // get a vector of the transfers that belong in this section
+    auto v = m_model->get_all();
+    auto should_remove = [section](const std::shared_ptr<Transfer>& t) {
+      return get_transfer_section(t) != section;
+    };
+    v.erase(std::remove_if(v.begin(), v.end(), should_remove), v.end());
 
-    // soft them in reverse chronological order s.t.
+    // soft them in reverse chronological order so
     // the most recent transfer is displayed first
     auto compare = [](const std::shared_ptr<Transfer>& a,
                       const std::shared_ptr<Transfer>& b){
       return a->time_started > b->time_started;
     };
-    std::sort(transfers.begin(), transfers.end(), compare);
+    std::sort(v.begin(), v.end(), compare);
+    return v;
+  }
+    
+  GMenuModel* create_ongoing_transfers_section()
+  {
+    auto menu = g_menu_new();
+
+    auto transfers = get_transfers(ONGOING);
 
     // add the bulk actions menuitem ("Resume all" or "Pause all")
     int n_can_resume = 0;
@@ -528,18 +543,7 @@ private:
   {
     auto menu = g_menu_new();
 
-    // build a list of the successful transfers
-    std::vector<std::shared_ptr<Transfer>> transfers;
-    for (const auto& transfer : m_model->get_all())
-      if (transfer->state == Transfer::FINISHED)
-        transfers.push_back (transfer);
-
-    // as per spec, sort s.t. most recent transfer is first
-    auto compare = [](const std::shared_ptr<Transfer>& a,
-                      const std::shared_ptr<Transfer>& b){
-      return a->time_started > b->time_started;
-    };
-    std::sort(transfers.begin(), transfers.end(), compare);
+    auto transfers = get_transfers(SUCCESSFUL);
 
     // as per spec, limit the list to 10 items
     constexpr int max_items = 10;
