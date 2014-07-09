@@ -143,7 +143,9 @@ public:
       }
     else
       {
-        g_warning("%s: unrecognized signal '%s'", G_STRLOC, signal_name);
+        auto args = g_variant_print(parameters, true);
+        g_warning("%s: unrecognized signal '%s': %s", G_STRLOC, signal_name, args);
+        g_free(args);
       }
   }
 
