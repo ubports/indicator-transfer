@@ -628,46 +628,44 @@ private:
                              const char*& extra_label,
                              const char*& detailed_action) const
   {
+    unsigned int n_can_pause = 0;
+    unsigned int n_can_resume = 0;
+    unsigned int n_can_clear = 0;
     GMenuModel* mm = G_MENU_MODEL(menu);
+    for (int i=0, n=g_menu_model_get_n_items(mm); i<n; ++i)
+      {
+        gchar * uid = nullptr;
+        if (g_menu_model_get_item_attribute(mm, i, ATTRIBUTE_X_UID, "s", &uid, nullptr))
+          {
+            std::shared_ptr<Transfer> t = m_model->get(uid);
+            g_free(uid);
+            if (!t)
+              continue;
 
-    if ((section == SUCCESSFUL) && (g_menu_model_get_n_items(mm) > 1))
+            if (t->can_pause())
+              ++n_can_pause;
+            if (t->can_resume())
+              ++n_can_resume;
+            if (t->can_clear())
+              ++n_can_clear;
+          }
+      }
+
+    if ((section == SUCCESSFUL) && (n_can_clear > 0))
       {
         label = _("Successful Transfers");
         extra_label = _("Clear all");
         detailed_action = "indicator.clear-all";
       }
-    else if (section == ONGOING)
+    else if ((section == ONGOING) && (n_can_resume > 0))
       {
-        unsigned int n_can_pause = 0;
-        unsigned int n_can_resume = 0;
-
-        for (int i=0, n=g_menu_model_get_n_items(mm); i<n; ++i)
-          {
-            gchar * uid = nullptr;
-            if (g_menu_model_get_item_attribute(mm, i, ATTRIBUTE_X_UID, "s", &uid, nullptr))
-              {
-                std::shared_ptr<Transfer> t = m_model->get(uid);
-                g_free(uid);
-
-                if (!t)
-                  continue;
-                else if (t->can_pause())
-                  ++n_can_pause;
-                else if (t->can_resume())
-                  ++n_can_resume;
-              }
-          }
-           
-        if (n_can_resume > 0)
-          {
-            extra_label = _("Resume all");
-            detailed_action = "indicator.resume-all";
-          }
-        else if (n_can_pause > 0)
-          {
-            extra_label = _("Pause all");
-            detailed_action = "indicator.pause-all";
-          }
+        extra_label = _("Resume all");
+        detailed_action = "indicator.resume-all";
+      }
+    else if ((section == ONGOING) && (n_can_pause > 0))
+      {
+        extra_label = _("Pause all");
+        detailed_action = "indicator.pause-all";
       }
   }
 
