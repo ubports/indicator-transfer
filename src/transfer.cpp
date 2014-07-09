@@ -50,7 +50,7 @@ bool Transfer::can_resume() const
 
 bool Transfer::can_pause() const
 {
-  return state==RUNNING || state==HASHING || state==PROCESSING;
+  return state==RUNNING || state==HASHING || state==PROCESSING || state==QUEUED;
 }
 
 bool Transfer::can_cancel() const
