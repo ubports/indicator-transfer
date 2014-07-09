@@ -141,6 +141,15 @@ public:
         g_variant_get_child(parameters, 1, "t", &m_total_size);
         update_progress();
       }
+    else if (!g_strcmp0(signal_name, "httpError") ||
+             !g_strcmp0(signal_name, "networkError") ||
+             !g_strcmp0(signal_name, "processsError"))
+      {
+        char* error_string = nullptr;
+        g_variant_get_child(parameters, 1, "s", &error_string);
+        set_error(error_string);
+        g_free(error_string);
+      }
     else
       {
         auto args = g_variant_print(parameters, true);
