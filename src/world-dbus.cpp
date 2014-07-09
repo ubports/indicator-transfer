@@ -90,6 +90,8 @@ public:
 
   void handle_signal(const gchar* signal_name, GVariant* parameters)
   {
+    g_debug ("%s transfer %s got signal '%s'", G_STRLOC, id.c_str(), signal_name);
+
     if (!g_strcmp0(signal_name, "started"))
       {
         if (get_signal_success_arg(parameters))
@@ -131,7 +133,8 @@ public:
       {
         char* error_string = nullptr;
         g_variant_get_child(parameters, 0, "s", &error_string);
-        set_error(error_string);
+        set_error_string(error_string);
+        set_state(ERROR);
         g_free(error_string);
       }
     else if (!g_strcmp0(signal_name, "progress"))
@@ -145,10 +148,13 @@ public:
              !g_strcmp0(signal_name, "networkError") ||
              !g_strcmp0(signal_name, "processsError"))
       {
-        char* error_string = nullptr;
-        g_variant_get_child(parameters, 1, "s", &error_string);
-        set_error(error_string);
-        g_free(error_string);
+        int32_t i;
+        char* str = nullptr;
+        g_variant_get_child(parameters, 0, "(is)", &i, &str);
+        g_message("%s setting error to '%s'", G_STRLOC, str);
+        set_error_string(str);
+        set_state(ERROR);
+        g_free(str);
       }
     else
       {
@@ -174,6 +180,8 @@ private:
 
   void call_method_no_args_no_response(const char* method_name)
   {
+    g_debug ("%s transfer %s calling '%s'", G_STRLOC, id.c_str(), method_name);
+
     g_dbus_connection_call(m_bus,                  // connection
                            BUS_NAME,               // bus_name
                            m_object_path.c_str(),  // object path
@@ -312,7 +320,7 @@ private:
       }
   }
 
-  void set_error(const char* str)
+  void set_error_string(const char* str)
   {
     const std::string tmp = str ? str : "";
     if (error_string != tmp)
