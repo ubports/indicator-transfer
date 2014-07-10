@@ -130,7 +130,7 @@ TEST_F(ControllerFixture, PauseAll)
     bool can_pause;
     Transfer::Id id;
   } transfers[] = {
-    { Transfer::QUEUED, false, "queued" },
+    { Transfer::QUEUED, true, "queued" },
     { Transfer::RUNNING, true, "running" },
     { Transfer::PAUSED, false, "paused" },
     { Transfer::CANCELED, false, "canceled" },
