@@ -1,3 +1,11 @@
+indicator-transfer (0.1+14.10.20140711-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Don't rebuild the full menu every time there's a change event from
+    the DownloadManager.
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 11 Jul 2014 07:29:28 +0000
+
 indicator-transfer (0.1+14.10.20140707-0ubuntu1) utopic; urgency=low
 
   [ Charles Kerr ]
