@@ -26,8 +26,6 @@
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 
-#include <algorithm> // std::sort()
-
 namespace unity {
 namespace indicator {
 namespace transfer {
@@ -288,14 +286,10 @@ public:
     // initialize the menu
     create_gmenu();
     set_model(model);
-    update_section(ONGOING);
-    update_section(SUCCESSFUL);
   }
 
   virtual ~Menu()
   {
-    if (m_update_menu_tag)
-      g_source_remove(m_update_menu_tag);
     if (m_update_header_tag)
       g_source_remove(m_update_header_tag);
     g_clear_object(&m_menu);
@@ -308,13 +302,13 @@ public:
 
     if ((m_model = model))
       {
-        auto updater = [this](const Transfer::Id&) {
-          update_header_soon();
-          update_menu_soon();
-        };
-        c.insert(m_model->added().connect(updater));
-        c.insert(m_model->changed().connect(updater));
-        c.insert(m_model->removed().connect(updater));
+        c.insert(m_model->added().connect([this](const Transfer::Id& id){add(id);}));
+        c.insert(m_model->changed().connect([this](const Transfer::Id& id){update(id);}));
+        c.insert(m_model->removed().connect([this](const Transfer::Id& id){remove(id);}));
+
+        // add the transfers
+        for (const auto& id : m_model->get_ids())
+          add(id);
       }
 
     update_header();
@@ -326,20 +320,19 @@ private:
   {
     g_assert(m_submenu == nullptr);
 
+    // build the submenu
     m_submenu = g_menu_new();
-
-    // build placeholders for the sections
     for(int i=0; i<NUM_SECTIONS; i++)
-    {
-      auto item = g_menu_item_new(nullptr, nullptr);
-      g_menu_append_item(m_submenu, item);
-      g_object_unref(item);
-    }
+      {
+        auto section = g_menu_new();
+        g_menu_append_section(m_submenu, nullptr, G_MENU_MODEL(section));
+        g_object_unref(section);
+      }
 
     // add submenu to the header
     const auto detailed_action = (std::string{"indicator."} + name()) + "-header";
     auto header = g_menu_item_new(nullptr, detailed_action.c_str());
-    g_menu_item_set_attribute(header, "x-canonical-type", "s",
+    g_menu_item_set_attribute(header, ATTRIBUTE_X_TYPE, "s",
                               "com.canonical.indicator.root");
     g_menu_item_set_submenu(header, G_MENU_MODEL(m_submenu));
     g_object_unref(m_submenu);
@@ -371,7 +364,9 @@ private:
   {
     auto action_name = g_strdup_printf("%s-header", name());
     auto state = create_header_state();
-    g_action_group_change_action_state(m_gactions->action_group(), action_name, state);
+    g_action_group_change_action_state(m_gactions->action_group(),
+                                       action_name,
+                                       state);
     g_free(action_name);
   }
 
@@ -441,211 +436,307 @@ private:
   }
 
   /***
-  ****  MENU
+  ****  Menu Items Utils
   ***/
 
-  void update_menu_soon()
+  // compare an attribute between a menumodel's existing item and a new item
+  static bool menu_item_attribute_is_equal(GMenuModel* model,
+                                           int pos,
+                                           GMenuItem* item,
+                                           const char* attr)
   {
-    if (m_update_menu_tag == 0)
-      m_update_menu_tag = g_timeout_add_seconds (1, update_menu_now, this);
-  }
-  static gboolean update_menu_now (gpointer gself)
-  {
-    auto* self = static_cast<Menu*>(gself);
-    self->m_update_menu_tag = 0;
-    self->update_section(ONGOING);
-    self->update_section(SUCCESSFUL);
-    return G_SOURCE_REMOVE;
+    auto a = g_menu_model_get_item_attribute_value(model, pos, attr, nullptr);
+    auto b = g_menu_item_get_attribute_value(item, attr, nullptr);
+    const bool equal = g_variant_equal(a, b);
+    g_clear_pointer(&a, g_variant_unref);
+    g_clear_pointer(&b, g_variant_unref);
+    return equal;
   }
 
-  void update_section(Section section)
+  // find the position of the menumodel's item with the specified attribute
+  static int find_matching_menu_item(GMenuModel* mm,
+                                     const char* attr,
+                                     GVariant* value)
   {
-    GMenuModel * model = nullptr;
+    g_return_val_if_fail(value != nullptr, -1);
 
-    switch (section)
+    for (int i=0, n=g_menu_model_get_n_items(mm); i<n; ++i)
       {
-        case ONGOING:
-          model = create_ongoing_transfers_section();
-          break;
-
-        case SUCCESSFUL:
-          model = create_successful_transfers_section();
-          break;
-
-        case NUM_SECTIONS:
-          g_warn_if_reached();
+        auto test = g_menu_model_get_item_attribute_value(mm, i, attr, nullptr);
+        const bool equal = (test != nullptr) && g_variant_equal(value, test);
+        g_clear_pointer(&test, g_variant_unref);
+        if (equal)
+          return i;
       }
 
-    if (model)
+    return -1;
+  }
+
+  /***
+  ****  Bulk Action Menu Items
+  ***/
+
+  static GMenuItem* create_bulk_menu_item(const char* label,
+                                          const char* extra_label,
+                                          const char* detailed_action)
+  {
+    auto item = g_menu_item_new(label, detailed_action);
+
+    g_menu_item_set_attribute(item, ATTRIBUTE_X_TYPE, "s", BUTTON_SECTION);
+
+    if (extra_label && *extra_label)
       {
-        g_menu_remove(m_submenu, section);
-        g_menu_insert_section(m_submenu, section, nullptr, model);
-        g_object_unref(model);
+        g_menu_item_set_attribute(item, ATTRIBUTE_X_LABEL,
+                                  "s", extra_label);
+      }
+
+    return item;
+  }
+
+  GMenuItem* get_next_bulk_action (GMenu* menu, Section section)
+  {
+    const char* label = nullptr;
+    const char* extra_label = nullptr;
+    const char* detailed_action = nullptr;
+
+    unsigned int n_can_pause = 0;
+    unsigned int n_can_resume = 0;
+    unsigned int n_can_clear = 0;
+    GMenuModel* mm = G_MENU_MODEL(menu);
+    for (int i=0, n=g_menu_model_get_n_items(mm); i<n; ++i)
+      {
+        gchar * uid = nullptr;
+        if (g_menu_model_get_item_attribute(mm, i, ATTRIBUTE_X_UID,
+                                            "s", &uid, nullptr))
+          {
+            std::shared_ptr<Transfer> t = m_model->get(uid);
+            g_free(uid);
+            if (!t)
+              continue;
+
+            if (t->can_pause())
+              ++n_can_pause;
+            if (t->can_resume())
+              ++n_can_resume;
+            if (t->can_clear())
+              ++n_can_clear;
+          }
+      }
+
+    if ((section == SUCCESSFUL) && (n_can_clear > 0))
+      {
+        label = _("Successful Transfers");
+        extra_label = _("Clear all");
+        detailed_action = "indicator.clear-all";
+      }
+    else if ((section == ONGOING) && (n_can_resume > 0))
+      {
+        label = nullptr;
+        extra_label = _("Resume all");
+        detailed_action = "indicator.resume-all";
+      }
+    else if ((section == ONGOING) && (n_can_pause > 0))
+      {
+        label = nullptr;
+        extra_label = _("Pause all");
+        detailed_action = "indicator.pause-all";
+      }
+
+    GMenuItem* item;
+    if (detailed_action != nullptr)
+      item = create_bulk_menu_item(label, extra_label, detailed_action);
+    else
+      item = nullptr;
+    return item;
+  }
+
+  static bool bulk_menu_item_is_equal(GMenuModel* model, 
+                                      int pos,
+                                      GMenuItem* item)
+  {
+    return menu_item_attribute_is_equal(model, pos, item, ATTRIBUTE_X_TYPE)
+        && menu_item_attribute_is_equal(model, pos, item, G_MENU_ATTRIBUTE_ACTION);
+  }
+
+  void update_bulk_menu_item(GMenu* menu, Section section)
+  {
+    GMenuModel* mm = G_MENU_MODEL(menu);
+
+    // create a new item
+    auto item = get_next_bulk_action (menu, section);
+
+    // find the current item
+    auto val = g_variant_new_string(BUTTON_SECTION);
+    int pos = find_matching_menu_item(mm, ATTRIBUTE_X_TYPE, val);
+    g_clear_pointer(&val, g_variant_unref);
+
+    // maybe remove the current item
+    if ((pos >= 0) && ((item == nullptr) || !bulk_menu_item_is_equal(mm, pos, item)))
+      {
+        g_menu_remove(menu, pos);
+        pos = -1;
+      }
+
+    // maybe add the new item
+    if (item != nullptr)
+      {
+        if (pos < 0)
+          g_menu_insert_item(menu, 0, item);
+        g_clear_object(&item);
       }
   }
 
-  GMenuModel* create_ongoing_transfers_section()
+  /***
+  ****  Transfer Menu Items
+  ***/
+
+  static GMenuItem* create_transfer_menu_item(const std::shared_ptr<Transfer>& t)
   {
-    auto menu = g_menu_new();
-
-    // build a list of the ongoing transfers
-    std::vector<std::shared_ptr<Transfer>> transfers;
-    for (const auto& transfer : m_model->get_all())
-      if (transfer->state != Transfer::FINISHED)
-        transfers.push_back (transfer);
-
-    // soft them in reverse chronological order s.t.
-    // the most recent transfer is displayed first
-    auto compare = [](const std::shared_ptr<Transfer>& a,
-                      const std::shared_ptr<Transfer>& b){
-      return a->time_started > b->time_started;
-    };
-    std::sort(transfers.begin(), transfers.end(), compare);
-
-    // add the bulk actions menuitem ("Resume all" or "Pause all")
-    int n_can_resume = 0;
-    int n_can_pause = 0;
-    for (const auto& t : transfers)
-      {
-        if (t->can_resume())
-          ++n_can_resume;
-        else if (t->can_pause())
-          ++n_can_pause;
-      }
-    if (n_can_resume > 0)
-      append_bulk_action_menuitem(menu, nullptr, _("Resume all"), "indicator.resume-all");
-    else if (n_can_pause > 0)
-      append_bulk_action_menuitem(menu, nullptr, _("Pause all"), "indicator.pause-all");
-
-    // add the transfers
-    for (const auto& t : transfers)
-      append_transfer_menuitem(menu, t);
-
-    return G_MENU_MODEL(menu);
-  }
-
-  GMenuModel* create_successful_transfers_section()
-  {
-    auto menu = g_menu_new();
-
-    // build a list of the successful transfers
-    std::vector<std::shared_ptr<Transfer>> transfers;
-    for (const auto& transfer : m_model->get_all())
-      if (transfer->state == Transfer::FINISHED)
-        transfers.push_back (transfer);
-
-    // as per spec, sort s.t. most recent transfer is first
-    auto compare = [](const std::shared_ptr<Transfer>& a,
-                      const std::shared_ptr<Transfer>& b){
-      return a->time_started > b->time_started;
-    };
-    std::sort(transfers.begin(), transfers.end(), compare);
-
-    // as per spec, limit the list to 10 items
-    constexpr int max_items = 10;
-    if (transfers.size() > max_items)
-      transfers.erase(transfers.begin()+max_items, transfers.end());
-
-    // if there are any successful transfers, show the 'Clear all' button
-    if (!transfers.empty())
-      {
-        const char* label = _("Successful Transfers");
-        const char* extra_label = _("Clear all");
-        const char* action_name = "indicator.clear-all";
-        append_bulk_action_menuitem(menu, label, extra_label, action_name);
-      }
-
-    // add the transfers
-    for (const auto& t : transfers)
-      append_transfer_menuitem(menu, t);
-
-    return G_MENU_MODEL(menu);
-  }
-
-  void append_transfer_menuitem(GMenu* menu,
-                                const std::shared_ptr<Transfer>& transfer)
-  {
-    auto menuitem = create_transfer_menuitem(transfer);
-    g_menu_append_item(menu, menuitem);
-    g_object_unref(menuitem);
-  }
-
-  GMenuItem* create_transfer_menuitem(const std::shared_ptr<Transfer>& transfer)
-  {
-    const auto& id = transfer->id.c_str();
+    const auto& id = t->id.c_str();
 
     GMenuItem* menu_item;
 
-    if (!transfer->title.empty())
+    if (!t->title.empty())
       {
-        menu_item = g_menu_item_new (transfer->title.c_str(), nullptr);
+        menu_item = g_menu_item_new (t->title.c_str(), nullptr);
       }
     else
       {
-        char* size = g_format_size (transfer->total_size);
+        char* size = g_format_size (t->total_size);
         char* label = g_strdup_printf(_("Unknown Download (%s)"), size);
         menu_item = g_menu_item_new (label, nullptr);
         g_free(label);
         g_free(size);
       }
 
-    g_menu_item_set_attribute (menu_item, "x-canonical-type",
+    g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_TYPE,
                                "s", "com.canonical.indicator.transfer");
-    g_menu_item_set_attribute_value (menu_item, G_MENU_ATTRIBUTE_ICON,
-                                     create_transfer_icon(transfer));
-    g_menu_item_set_attribute (menu_item, "x-canonical-uid", "s", id);
+
+    //FIXME: this is a placeholder
+    auto icon = g_themed_icon_new("image-missing");
+    auto v = g_icon_serialize(icon);
+    g_menu_item_set_attribute_value (menu_item, G_MENU_ATTRIBUTE_ICON, v);
+    g_object_unref(icon);
+
+    g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_UID, "s", id);
     g_menu_item_set_action_and_target_value (menu_item,
                                              "indicator.activate-transfer",
                                              g_variant_new_string(id));
     return G_MENU_ITEM(menu_item);
   }
 
-  GVariant* create_transfer_icon(const std::shared_ptr<Transfer>&)// transfer)
+  void find_transfer_menu_item(const Transfer::Id& id,
+                               const Section& section,
+                               GMenu*& gmenu,
+                               int& pos) const
   {
-    //FIXME: this is a placeholder
-    return create_image_missing_icon();
+    auto mm = g_menu_model_get_item_link(G_MENU_MODEL(m_submenu),
+                                         section,
+                                         G_MENU_LINK_SECTION);
+    gmenu = G_MENU(mm);
+
+    auto val = g_variant_new_string(id.c_str());
+    pos = find_matching_menu_item(mm, ATTRIBUTE_X_UID, val);
+    g_variant_unref(val);
   }
 
-  void append_bulk_action_menuitem(GMenu* menu,
-                                   const char* label,
-                                   const char* extra_label,
-                                   const char* detailed_action)
+  static bool transfer_menu_item_is_equal(GMenuModel* model,
+                                          int pos,
+                                          GMenuItem* item)
   {
-    auto tmp = create_bulk_action_menuitem(label, extra_label, detailed_action);
-    g_menu_append_item(menu, tmp);
-    g_object_unref(tmp);
+    return menu_item_attribute_is_equal(model, pos, item, G_MENU_ATTRIBUTE_LABEL)
+        && menu_item_attribute_is_equal(model, pos, item, G_MENU_ATTRIBUTE_ICON);
   }
 
-  GMenuItem* create_bulk_action_menuitem(const char* label,
-                                         const char* extra_label,
-                                         const char* detailed_action)
+  // get which Section the Transfer should be in
+  static Section get_correct_section_for_transfer(const std::shared_ptr<Transfer>& transfer)
   {
-    auto menu_item = g_menu_item_new(label, detailed_action);
+    return (transfer->state == Transfer::FINISHED) ? SUCCESSFUL : ONGOING;
+  }
 
-    g_menu_item_set_attribute(menu_item, "x-canonical-type", "s",
-                              "com.canonical.indicator.button-section");
+  // get which Section, if any, the Transfer is currently in
+  bool get_current_section_for_transfer(const Transfer::Id& id, Section& section) const
+  {
+    const auto it = m_visible_transfers.find(id);
+    if (it == m_visible_transfers.end())
+      return false;
 
-    if (extra_label && *extra_label)
+    section = it->second;
+    return true;
+  }
+
+  void update(const Transfer::Id& id)
+  {
+    const auto t = m_model->get(id);
+    g_return_if_fail(t);
+
+    // if the transfer already has a menu item, find it
+    Section cur_section = NUM_SECTIONS;
+    GMenu* cur_menu = nullptr;
+    int cur_pos = -1;
+    if (get_current_section_for_transfer(id, cur_section))
+      find_transfer_menu_item(id, cur_section, cur_menu, cur_pos);
+
+    // see where the transfer's menu item should be
+    const Section new_section = get_correct_section_for_transfer(t);
+    GMenu* new_menu = nullptr;
+    int new_pos = -1;
+    find_transfer_menu_item(id, new_section, new_menu, new_pos);
+
+    // if the transfer's switching sections, remove the older menu item
+    if ((cur_menu != new_menu) && (cur_menu != nullptr) && (cur_pos >= 0))
       {
-        g_menu_item_set_attribute(menu_item, "x-canonical-extra-label",
-                                  "s", extra_label);
+        m_visible_transfers.erase(id);
+        g_menu_remove (cur_menu, cur_pos);
+        update_bulk_menu_item(cur_menu, cur_section);
       }
 
-    return menu_item;
+    if (new_menu != nullptr)
+      {
+        auto item = create_transfer_menu_item(t);
+
+        if (new_pos < 0) // not in the menu yet...
+          {
+            // transfers are sorted newest-to-oldest,
+            // so position this one immediately after the bulk menu item
+            constexpr int insert_pos = 1;
+            g_menu_insert_item(new_menu, insert_pos, item);
+          }
+        else if (!transfer_menu_item_is_equal(G_MENU_MODEL(new_menu), new_pos, item))
+          {
+            g_menu_remove(new_menu, new_pos);
+            g_menu_insert_item(new_menu, new_pos, item);
+          }
+
+        g_object_unref(item);
+        m_visible_transfers[t->id] = new_section;
+        update_bulk_menu_item(new_menu, new_section);
+      }
+
+    update_header_soon();
   }
 
-  /***
-  ****
-  ***/
-
-  // FIXME: this is a placeholder.
-  // remove it when we have real icons for (a) the header and (b) the menuitems
-  GVariant* create_image_missing_icon()
+  void add (const Transfer::Id& id)
   {
-    auto icon = g_themed_icon_new("image-missing");
-    auto v = g_icon_serialize(icon);
-    g_object_unref(icon);
-    return v;
+    update(id);
+  }
+
+  void remove(const Transfer::Id& id)
+  {
+    Section section = NUM_SECTIONS;
+    if (!get_current_section_for_transfer(id, section))
+      return;
+
+    GMenu* menu = nullptr;
+    int pos = -1;
+    find_transfer_menu_item(id, section, menu, pos);
+    if (pos < 0)
+      return;
+
+    g_menu_remove(menu, pos);
+    m_visible_transfers.erase(id);
+    update_bulk_menu_item(menu, section);
+    update_header_soon();
   }
 
   /***
@@ -658,14 +749,19 @@ private:
 
   std::shared_ptr<Model> m_model;
   std::shared_ptr<GActions> m_gactions;
+  std::map<Transfer::Id,Section> m_visible_transfers;
   GMenu* m_submenu = nullptr;
 
-  guint m_update_menu_tag = 0;
   guint m_update_header_tag = 0;
 
   // we've got raw pointers in here, so disable copying
   Menu(const Menu&) =delete;
   Menu& operator=(const Menu&) =delete;
+
+  static constexpr char const * ATTRIBUTE_X_UID {"x-canonical-uid"};
+  static constexpr char const * ATTRIBUTE_X_TYPE {"x-canonical-type"};
+  static constexpr char const * ATTRIBUTE_X_LABEL {"x-canonical-extra-label"};
+  static constexpr char const * BUTTON_SECTION {"com.canonical.indicator.button-section"};
 };
 
 /***
