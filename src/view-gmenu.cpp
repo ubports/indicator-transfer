@@ -152,8 +152,9 @@ private:
     if (transfer)
       {
         g_variant_builder_add(&b, "{sv}", "percent",
-                              g_variant_new_double(transfer->progress));
-        if (transfer->seconds_left >= 0)
+                              g_variant_new_double(CLAMP(transfer->progress, 0.0, 1.0)));
+
+        if ((transfer->seconds_left >= 0) && (int(transfer->progress*100.0) < 100))
           {
             g_variant_builder_add(&b, "{sv}", "seconds-left",
                                   g_variant_new_int32(transfer->seconds_left));
