@@ -56,7 +56,7 @@ static std::string dump_transfer(const std::shared_ptr<Transfer>& transfer)
                               transfer->app_icon.c_str(),
                               (size_t)transfer->time_started,
                               transfer->seconds_left,
-                              transfer->speed_bps/1024.0,
+                              transfer->speed_Bps/1024.0,
                               transfer->progress,
                               transfer->error_string.c_str(),
                               transfer->local_path.c_str());

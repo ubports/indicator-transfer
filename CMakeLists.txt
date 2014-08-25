@@ -31,11 +31,14 @@ set (CMAKE_INSTALL_FULL_PKGLIBEXECDIR "${CMAKE_INSTALL_FULL_LIBEXECDIR}/${CMAKE_
 find_package (PkgConfig REQUIRED)
 include (FindPkgConfig)
 
-pkg_check_modules (SERVICE_DEPS REQUIRED
-                   glib-2.0>=2.36
-                   gio-unix-2.0>=2.36
-                   properties-cpp>=0.0.1)
-include_directories (SYSTEM ${SERVICE_DEPS_INCLUDE_DIRS})
+pkg_check_modules(SERVICE_DEPS REQUIRED
+                  glib-2.0>=2.36
+                  gio-unix-2.0>=2.36
+                  properties-cpp>=0.0.1
+                  click-0.4>=0.4.30
+                  json-glib-1.0
+                  ubuntu-app-launch-2)
+include_directories(SYSTEM ${SERVICE_DEPS_INCLUDE_DIRS})
 
 ##
 ##  custom targets
