@@ -50,22 +50,23 @@ static constexpr char const * CH_TRANSFER_IFACE_NAME {"com.ubuntu.content.dbus.T
  * Each DBusTransfer also tracks a com.ubuntu.content.dbus.Transfer (cucdt)
  * object from content-hub. The cucdt is used for learning the download's peer
  * and for calling Charge() to launch the peer's app.
- *
- * cucdt tracking begins after content-hub sends a DownloadIdChanged signal
- * so that we know which ccad the cucdt corresponds to.
  */
 class DBusTransfer: public Transfer
 {
 public:
 
-  DBusTransfer(GDBusConnection* connection, const std::string& ccad_path):
+  DBusTransfer(GDBusConnection* connection,
+               const std::string& ccad_path,
+               const std::string& cucdt_path):
     m_bus(G_DBUS_CONNECTION(g_object_ref(connection))),
     m_cancellable(g_cancellable_new()),
-    m_ccad_path(ccad_path)
+    m_ccad_path(ccad_path),
+    m_cucdt_path(cucdt_path)
   {
     id = next_unique_id();
     time_started = time(nullptr);
     get_ccad_properties();
+    get_cucdt_properties();
   }
 
   ~DBusTransfer()
@@ -224,16 +225,6 @@ public:
         auto args = g_variant_print(parameters, true);
         g_warning("%s: unrecognized signal '%s': %s", G_STRLOC, signal_name, args);
         g_free(args);
-      }
-  }
-
-  void set_cucdt_path(const std::string& object_path)
-  {
-    if (m_cucdt_path != object_path)
-      {
-        m_cucdt_path = object_path;
-
-        get_cucdt_properties();
       }
   }
 
@@ -604,7 +595,7 @@ private:
   GDBusConnection* m_bus = nullptr;
   GCancellable* m_cancellable = nullptr;
   const std::string m_ccad_path;
-  std::string m_cucdt_path;
+  const std::string m_cucdt_path;
   std::string m_peer_name;
 };
 
@@ -716,17 +707,6 @@ private:
         m_bus = G_DBUS_CONNECTION(g_object_ref(bus));
 
         guint tag;
-        tag = g_dbus_connection_signal_subscribe(bus,
-                                                 DM_BUS_NAME,
-                                                 DM_MANAGER_IFACE_NAME,
-                                                 "downloadCreated",
-                                                 "/",
-                                                 nullptr,
-                                                 G_DBUS_SIGNAL_FLAGS_NONE,
-                                                 on_download_created,
-                                                 this,
-                                                 nullptr);
-        m_signal_subscriptions.insert(tag);
 
         tag = g_dbus_connection_signal_subscribe(bus,
                                                  DM_BUS_NAME,
@@ -777,8 +757,9 @@ private:
         g_variant_get_child(parameters, 0, "&s", &ccad_path);
         g_return_if_fail(cucdt_path != nullptr);
 
-        auto transfer = get_transfer_by_ccad_path(ccad_path);
-        transfer->set_cucdt_path(cucdt_path);
+        // ensure this ccad/cucdt pair is tracked
+        if (!find_transfer_by_ccad_path(ccad_path))
+          (void) create_new_transfer(ccad_path, cucdt_path);
       }
     else
       {
@@ -801,37 +782,14 @@ private:
 
     // Route this signal to the DBusTransfer for processing 
     auto self = static_cast<Impl*>(gself);
-    auto transfer = self->get_transfer_by_ccad_path(ccad_path);
-    transfer->handle_ccad_signal(signal_name, parameters);
-  }
-
-  static void on_download_created(GDBusConnection* /*connection*/,
-                                   const gchar*    /*sender_name*/,
-                                   const gchar*    /*download_manager_path*/,
-                                   const gchar*    /*interface_name*/,
-                                   const gchar*    /*signal_name*/,
-                                   GVariant*         parameters,
-                                   gpointer          gself)
-  {
-    // ensure a DBusTransfer object exists for this ccad object path
-    const char* ccad_path = nullptr;
-    g_variant_get_child(parameters, 0, "&o", &ccad_path);
-    (void) static_cast<Impl*>(gself)->get_transfer_by_ccad_path(ccad_path);
+    auto transfer = self->find_transfer_by_ccad_path(ccad_path);
+    if (transfer)
+      transfer->handle_ccad_signal(signal_name, parameters);
   }
 
   /***
   ****
   ***/
-
-  std::shared_ptr<DBusTransfer> get_transfer_by_ccad_path(const std::string& path)
-  {
-    auto transfer = find_transfer_by_ccad_path(path);
-
-    if (!transfer)
-      transfer = create_new_transfer(path);
-
-    return transfer;
-  }
 
   std::shared_ptr<DBusTransfer> find_transfer_by_ccad_path(const std::string& path)
   {
@@ -859,9 +817,10 @@ private:
     return nullptr;
   }
 
-  std::shared_ptr<DBusTransfer> create_new_transfer(const std::string& dm_path)
+  std::shared_ptr<DBusTransfer> create_new_transfer(const std::string& ccad_path,
+                                                    const std::string& cucdt_path)
   {
-    auto new_transfer = std::make_shared<DBusTransfer>(m_bus, dm_path);
+    auto new_transfer = std::make_shared<DBusTransfer>(m_bus, ccad_path, cucdt_path);
 
     m_model->add(new_transfer);
 
