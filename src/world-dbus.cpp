@@ -614,6 +614,12 @@ public:
     m_model(model)
   {
     g_bus_get(G_BUS_TYPE_SESSION, m_cancellable, on_bus_ready, this);
+
+    m_model->removed().connect([this](const Transfer::Id& id){
+      auto transfer = find_transfer_by_id(id);
+      if (transfer)
+        m_removed_ccad.insert(transfer->ccad_path());
+    });
   }
 
   ~Impl()
@@ -759,7 +765,7 @@ private:
 
         // ensure this ccad/cucdt pair is tracked
         if (!find_transfer_by_ccad_path(ccad_path))
-          (void) create_new_transfer(ccad_path, cucdt_path);
+          create_new_transfer(ccad_path, cucdt_path);
       }
     else
       {
@@ -817,20 +823,24 @@ private:
     return nullptr;
   }
 
-  std::shared_ptr<DBusTransfer> create_new_transfer(const std::string& ccad_path,
-                                                    const std::string& cucdt_path)
+  void create_new_transfer(const std::string& ccad_path,
+                           const std::string& cucdt_path)
   {
+    // don't let transfers reappear after they've been cleared by the user
+    if (m_removed_ccad.count(ccad_path))
+      return;
+
     auto new_transfer = std::make_shared<DBusTransfer>(m_bus, ccad_path, cucdt_path);
 
     m_model->add(new_transfer);
 
+    // when one of the DBusTransfer's properties changes,
+    // emit a change signal for the model
     const auto id = new_transfer->id;
     new_transfer->changed().connect([this,id]{
       if (m_model->get(id))
         m_model->emit_changed(id);
     });
-
-    return new_transfer;
   }
 
   std::shared_ptr<DBusTransfer> find_transfer_by_id(const Transfer::Id& id)
@@ -844,6 +854,7 @@ private:
   GCancellable* m_cancellable = nullptr;
   std::set<guint> m_signal_subscriptions;
   std::shared_ptr<MutableModel> m_model;
+  std::set<std::string> m_removed_ccad;
 };
 
 /***
