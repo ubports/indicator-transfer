@@ -24,6 +24,7 @@
 
 #include <json-glib/json-glib.h>
 
+#include <algorithm>
 #include <iostream>
 
 namespace unity {
@@ -254,9 +255,6 @@ private:
 
   uint64_t get_averaged_speed_Bps()
   {
-    uint32_t n_samples = 0;
-    uint64_t Bps_sum = 0;
-
     // limit the average to the last X samples
     static constexpr int max_slots = 50;
     if (m_history.size() > max_slots)
@@ -265,18 +263,22 @@ private:
     // limit the average to the last Y seconds
     static constexpr unsigned int max_age_seconds = 30;
     const auto oldest_allowed_usec = g_get_real_time() - (max_age_seconds * G_USEC_PER_SEC);
-    for(unsigned i=1; i<m_history.size(); i++)
-      {
-        if (m_history[i-1].time_usec < oldest_allowed_usec)
-          continue;
+    const auto is_young = [oldest_allowed_usec](const DownloadProgress& p){return p.time_usec >= oldest_allowed_usec;};
+    m_history.erase(std::begin(m_history), std::find_if(std::begin(m_history), std::end(m_history), is_young));
 
-        const auto diff = m_history[i] - m_history[i-1];
-        const auto Bps = (diff.bytes * G_USEC_PER_SEC) / diff.time_usec;
-        Bps_sum += Bps;
-        ++n_samples;
+    uint64_t Bps;
+
+    if (m_history.size() < 2)
+      {
+        Bps = 0;
+      }
+    else
+      {
+        const auto diff = m_history.back() - m_history.front();
+        Bps = (diff.bytes * G_USEC_PER_SEC) / diff.time_usec;
       }
 
-    return n_samples ? Bps_sum / n_samples : 0;
+    return Bps;
   }
 
   void update_progress()
