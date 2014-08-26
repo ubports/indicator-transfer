@@ -429,15 +429,21 @@ private:
     if (user != nullptr)
       {
         gchar* path = click_user_get_path(user, peer_name, &error);
-        JsonObject* manifest = click_user_get_manifest(user, peer_name, &error);
-        const gchar* icon_name = manifest ? json_object_get_string_member(manifest, "icon") : nullptr;
-        if (path && manifest)
+        if (path != nullptr)
           {
-            char* filename = g_build_filename(path, icon_name, nullptr);
-            set_icon(filename);
-            g_free(filename);
+            auto manifest = click_user_get_manifest(user, peer_name, &error);
+            if (manifest != nullptr)
+              {
+                const auto icon_name = json_object_get_string_member(manifest, "icon");
+                if (icon_name != nullptr)
+                  {
+                    auto filename = g_build_filename(path, icon_name, nullptr);
+                    set_icon(filename);
+                    g_free(filename);
+                  }
+              }
+            g_free(path);
           }
-        g_free(path);
       }
 
     if (error != nullptr)
