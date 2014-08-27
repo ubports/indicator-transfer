@@ -8,6 +8,9 @@ Build-Depends: cmake,
                g++-4.9,
                libglib2.0-dev (>= 2.35.4),
                libproperties-cpp-dev,
+               libclick-0.4-dev (>= 0.4.30),
+               libjson-glib-dev,
+               libubuntu-app-launch2-dev,
 # for coverage reports
                lcov,
 # for tests

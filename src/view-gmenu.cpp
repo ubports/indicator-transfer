@@ -152,8 +152,9 @@ private:
     if (transfer)
       {
         g_variant_builder_add(&b, "{sv}", "percent",
-                              g_variant_new_double(transfer->progress));
-        if (transfer->seconds_left >= 0)
+                              g_variant_new_double(CLAMP(transfer->progress, 0.0, 1.0)));
+
+        if ((transfer->seconds_left >= 0) && (int(transfer->progress*100.0) < 100))
           {
             g_variant_builder_add(&b, "{sv}", "seconds-left",
                                   g_variant_new_int32(transfer->seconds_left));
@@ -612,11 +613,23 @@ private:
     g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_TYPE,
                                "s", "com.canonical.indicator.transfer");
 
-    //FIXME: this is a placeholder
-    auto icon = g_themed_icon_new("image-missing");
-    auto v = g_icon_serialize(icon);
-    g_menu_item_set_attribute_value (menu_item, G_MENU_ATTRIBUTE_ICON, v);
-    g_object_unref(icon);
+    GVariant * serialized_icon = nullptr;
+    if (!t->app_icon.empty() && g_file_test(t->app_icon.c_str(), G_FILE_TEST_EXISTS))
+      {
+        auto file = g_file_new_for_path(t->app_icon.c_str());
+        auto icon = g_file_icon_new(file);
+        serialized_icon = g_icon_serialize(icon);
+        g_clear_object(&icon);
+        g_clear_object(&file);
+      }
+    if (serialized_icon == nullptr)
+      {
+        auto icon = g_themed_icon_new("image-missing");
+        serialized_icon = g_icon_serialize(icon);
+        g_clear_object(&icon);
+      }
+    g_menu_item_set_attribute_value (menu_item, G_MENU_ATTRIBUTE_ICON, serialized_icon);
+    g_variant_unref(serialized_icon);
 
     g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_UID, "s", id);
     g_menu_item_set_action_and_target_value (menu_item,

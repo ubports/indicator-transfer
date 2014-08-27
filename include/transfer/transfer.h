@@ -56,7 +56,8 @@ struct Transfer
   // [0...1]
   float progress = 0.0;
 
-  uint64_t speed_bps = 0;
+  // bytes per second
+  uint64_t speed_Bps = 0;
 
   uint64_t total_size = 0;
 

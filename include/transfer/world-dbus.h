@@ -47,19 +47,8 @@ public:
     void open_app(const Transfer::Id& id);
 
 private:
-    GDBusConnection* m_bus = nullptr;
-    GCancellable* m_cancellable = nullptr;
-    std::set<guint> m_signal_subscriptions;
-    std::shared_ptr<MutableModel> m_model;
-
-    void set_bus(GDBusConnection*);
-    void add_transfer(const char* object_path);
-
-    static void on_bus_ready(GObject*, GAsyncResult*, gpointer);
-    static void on_progress(GObject*, GAsyncResult*, gpointer);
-    static void on_total_size(GObject*, GAsyncResult*, gpointer);
-    static void on_download_signal(GDBusConnection*, const gchar*, const gchar*, const gchar*, const gchar*, GVariant*, gpointer);
-    static void on_download_created(GDBusConnection*, const gchar*, const gchar*, const gchar*, const gchar*, GVariant*, gpointer);
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 } // namespace transfer

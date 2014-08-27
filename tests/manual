@@ -1,23 +1,23 @@
 
-Test-case indicator-transfer/simple-download-check
+Test-case indicator-transfer/download-an-image
 <dl>
     <dt>Ensure indicator-transfer-service is running<dt>
-            <dd>The indicator should be visible in the panel</dd>
-
-            <dt>Run the script tests/simple-download.py and, immediately afterwards,
-                click or pull down on the indicator so that its menu is visible
-                and its menuitems can be observed while the downloads run.</dt>
-                    <dd>In the 'Ongoing Transfers' section, the transfers should appear</dd>
-                    <dd>In the 'Ongoing Transfers' section, a 'Pause all' button should appear</dd>
-                    <dd>While transfers are active, the indicator's icon should indicate activity</dd>
-                    <dd>As each transfer finishes, its menuitem should move from the 'Ongoing' to 'Successful' section</dd>
-                    <dd>As the first transfer is moved to the 'Successful' section, a 'Clear all' button should appear</dd>
-                    <dd>As the last transfer finishes, the indicator's icon should change to indicate an idle state</dd>
-                    <dd>As the last transfer finishes, the 'Pause all' button should disappear</dd>
-
-            <dt>After all the transfers finish, press the 'Clear all' button.</dt>
-                    <dd>All three transfers should be cleared from the menu.</dd>
-                    <dd>The 'Clear all' button should disappear</dd>
+        <dd>The indicator should be visible in the panel</dd>
+    <dt>Start downloading an image from the Browser to the Gallery.
+        (In the Browser, tap-and-hold on an image, choose 'Save image'
+        in the popup, and select 'Gallery' at the 'Open with ' prompt.</dt>
+        <dd>In the 'Ongoing Transfers' section, the transfer should appear</dd>
+        <dd>In the 'Ongoing Transfers' section, a 'Pause all' button should appear</dd>
+        <dd>While transfer is active, the indicator's icon should indicate activity</dd>
+        <dd>While transfer is active, the menuitem's progressbar should show its progress</dd>
+        <dd>As the transfer finishes, its menuitem should move from the 'Ongoing' to 'Successful' section</dd>
+        <dd>As the transfer finishes, the indicator's icon should change to indicate an idle state</dd>
+        <dd>As the transfer finishes, the 'Pause all' button should disappear</dd>
+    <dt>Click on the completed transfer's menuitem</dt>
+        <dd>The gallery app should launch</dd>
+    <dt>Press the 'Clear all' button.</dt>
+        <dd>The transfer should be cleared from the menu.</dd>
+        <dd>The 'Clear all' button should disappear</dd>
 </dt>
 
 <strong>
