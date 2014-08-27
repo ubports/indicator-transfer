@@ -1,3 +1,13 @@
+indicator-transfer (0.1+14.10.20140827-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Better use of information provided by content-hub. (LP: #1348162)
+
+  [ Ted Gould ]
+  * Minor packaging changes from review
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 27 Aug 2014 02:32:40 +0000
+
 indicator-transfer (0.1+14.10.20140814-0ubuntu1) utopic; urgency=low
 
   [ Charles Kerr ]
