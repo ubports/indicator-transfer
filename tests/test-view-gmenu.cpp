@@ -134,7 +134,7 @@ TEST_F(GMenuViewFixture, ExportedActions)
   wait_msec();
 
   // these are the actions we expect to find
-  const std::set<std::string> expected_actions {
+  std::set<std::string> expected_actions {
     "activate-transfer",
     "cancel-transfer",
     "clear-all",
@@ -144,10 +144,11 @@ TEST_F(GMenuViewFixture, ExportedActions)
     "pause-all",
     "phone-header",
     "resume-all",
-    "resume-transfer",
-    "transfer-states"
+    "resume-transfer"
   };
-
+  for (const auto& id : m_model->get_ids())
+    expected_actions.insert("transfer-state." + id);
+ 
   auto connection = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, nullptr);
   auto exported = g_dbus_action_group_get(connection, BUS_NAME, BUS_PATH);
   auto names_strv = g_action_group_list_actions(G_ACTION_GROUP(exported));

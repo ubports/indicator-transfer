@@ -42,7 +42,7 @@ public:
   {
     g_debug("creating a new DBusTransfer for '%s'", object_path);
 
-    id = object_path;
+    id = next_unique_id();
     time_started = time(nullptr);
 
     get_properties_from_bus();
@@ -83,20 +83,15 @@ public:
     call_method_no_args_no_response("cancel");
   }
 
-  // the 'started', 'paused', 'resumed', and 'canceled' signals
-  // from com.canonical.applications.Download all have a single
-  // parameter, a boolean success flag.
-  bool get_signal_success_arg(GVariant* parameters)
+  const std::string& object_path() const
   {
-    gboolean success = false;
-    g_return_val_if_fail(g_variant_is_container(parameters), false);
-    g_return_val_if_fail(g_variant_n_children(parameters) == 1, false);
-    g_variant_get_child(parameters, 0, "b", &success);
-    return success;
+    return m_object_path;
   }
 
   void handle_signal(const gchar* signal_name, GVariant* parameters)
   {
+    g_debug ("%s transfer %s got signal '%s'", G_STRLOC, id.c_str(), signal_name);
+
     if (!g_strcmp0(signal_name, "started"))
       {
         if (get_signal_success_arg(parameters))
@@ -138,7 +133,8 @@ public:
       {
         char* error_string = nullptr;
         g_variant_get_child(parameters, 0, "s", &error_string);
-        set_error(error_string);
+        set_error_string(error_string);
+        set_state(ERROR);
         g_free(error_string);
       }
     else if (!g_strcmp0(signal_name, "progress"))
@@ -148,16 +144,44 @@ public:
         g_variant_get_child(parameters, 1, "t", &m_total_size);
         update_progress();
       }
+    else if (!g_strcmp0(signal_name, "httpError") ||
+             !g_strcmp0(signal_name, "networkError") ||
+             !g_strcmp0(signal_name, "processsError"))
+      {
+        int32_t i;
+        char* str = nullptr;
+        g_variant_get_child(parameters, 0, "(is)", &i, &str);
+        g_message("%s setting error to '%s'", G_STRLOC, str);
+        set_error_string(str);
+        set_state(ERROR);
+        g_free(str);
+      }
     else
       {
-        g_warning("%s: unrecognized signal '%s'", G_STRLOC, signal_name);
+        auto args = g_variant_print(parameters, true);
+        g_warning("%s: unrecognized signal '%s': %s", G_STRLOC, signal_name, args);
+        g_free(args);
       }
   }
 
 private:
 
+  // the 'started', 'paused', 'resumed', and 'canceled' signals
+  // from com.canonical.applications.Download all have a single
+  // parameter, a boolean success flag.
+  bool get_signal_success_arg(GVariant* parameters)
+  {
+    gboolean success = false;
+    g_return_val_if_fail(g_variant_is_container(parameters), false);
+    g_return_val_if_fail(g_variant_n_children(parameters) == 1, false);
+    g_variant_get_child(parameters, 0, "b", &success);
+    return success;
+  }
+
   void call_method_no_args_no_response(const char* method_name)
   {
+    g_debug ("%s transfer %s calling '%s'", G_STRLOC, id.c_str(), method_name);
+
     g_dbus_connection_call(m_bus,                  // connection
                            BUS_NAME,               // bus_name
                            m_object_path.c_str(),  // object path
@@ -296,7 +320,7 @@ private:
       }
   }
 
-  void set_error(const char* str)
+  void set_error_string(const char* str)
   {
     const std::string tmp = str ? str : "";
     if (error_string != tmp)
@@ -515,6 +539,29 @@ void DBusWorld::set_bus(GDBusConnection* bus)
     }
 }
 
+namespace
+{
+  std::shared_ptr<DBusTransfer>
+  find_dbus_transfer_for_object_path(const std::shared_ptr<Model>& model,
+                                     const std::string& object_path)
+  {
+    std::shared_ptr<DBusTransfer> dbus_transfer;
+
+    for (const auto& transfer : model->get_all())
+      {
+        const auto tmp = std::static_pointer_cast<DBusTransfer>(transfer);
+
+        if (tmp && (tmp->object_path()==object_path))
+          {
+             dbus_transfer = tmp;
+             break;
+          }
+      }
+
+    return dbus_transfer;
+  }
+}
+
 void DBusWorld::on_download_signal(GDBusConnection*, //connection,
                                   const gchar*,      //sender_name,
                                   const gchar*         object_path,
@@ -525,19 +572,19 @@ void DBusWorld::on_download_signal(GDBusConnection*, //connection,
 {
   auto self = static_cast<DBusWorld*>(gself);
 
-  auto transfer = self->m_model->get(object_path);
-  if (!transfer)
+  auto dbus_transfer = find_dbus_transfer_for_object_path(self->m_model, object_path);
+
+  if (!dbus_transfer)
     {
       g_message("A %s that we didn't know about just emitted signal '%s' -- "
                 "might be a transfer that was here before us?",
                 DOWNLOAD_IFACE_NAME, signal_name);
       self->add_transfer(object_path);
-      transfer = self->m_model->get(object_path);
-      g_return_if_fail (transfer);
+      dbus_transfer = find_dbus_transfer_for_object_path(self->m_model, object_path);
+      g_return_if_fail (dbus_transfer);
     }
 
-  std::static_pointer_cast<DBusTransfer>(transfer)->handle_signal(signal_name,
-                                                                  parameters);
+  dbus_transfer->handle_signal(signal_name, parameters);
 }
 
 void DBusWorld::on_download_created(GDBusConnection*, //connection,
@@ -568,7 +615,7 @@ void DBusWorld::add_transfer(const char* object_path)
   m_model->add(transfer);
 
   // notify the model whenever the Transfer changes
-  const std::string id = object_path;
+  const auto id = dbus_transfer->id;
   dbus_transfer->changed().connect([this,id]{
     if (m_model->get(id))
       m_model->emit_changed(id);
