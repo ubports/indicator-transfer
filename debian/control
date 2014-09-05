@@ -29,6 +29,7 @@ Homepage: https://launchpad.net/indicator-transfer
 # and sync up the code again.
 Vcs-Bzr: lp:indicator-transfer
 Vcs-Browser: https://bazaar.launchpad.net/~indicator-applet-developers/indicator-transfer/trunk.14.10/files
+X-Ubuntu-Use-Langpack: yes
 
 Package: indicator-transfer
 Architecture: any
