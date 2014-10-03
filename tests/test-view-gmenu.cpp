@@ -275,7 +275,7 @@ TEST_F(GMenuViewFixture, InvokedGActionsCallTheController)
 
 TEST_F(GMenuViewFixture, PhoneHeader)
 {
-  const std::string name = "phone";
+  const std::string profile = "phone";
 
   wait_msec();
 
@@ -312,7 +312,7 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   EXPECT_STREQ("com.canonical.indicator.root", str);
   g_clear_pointer(&str, g_free);
   g_menu_model_get_item_attribute(phone_menu_model, 0, G_MENU_ATTRIBUTE_ACTION, "s", &str);
-  const auto action_name = name + "-header";
+  const auto action_name = profile + "-header";
   EXPECT_EQ(std::string("indicator.")+action_name, str);
   g_clear_pointer(&str, g_free);
 
