@@ -12,7 +12,7 @@ Test-case indicator-transfer/download-an-image
 <dl>
     <dt>Start downloading an image from the Browser to the Gallery.
         (In the Browser, tap-and-hold on an image, choose 'Save image'
-        in the popup, and select 'Gallery' at the 'Open with ' prompt.</dt>
+        in the popup, and select 'Gallery' at the 'Open with ' prompt.)</dt>
         <dd>If the indicator wasn't already visible in the panel, it should appear as the transfer begins.</dd>
         <dd>In the 'Ongoing Transfers' section, the transfer should appear</dd>
         <dd>In the 'Ongoing Transfers' section, a 'Pause all' button should appear</dd>
