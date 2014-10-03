@@ -422,7 +422,7 @@ private:
   GVariant* create_header_state()
   {
     auto reffed_icon_v = get_header_icon();
-    auto title_v = g_variant_new_string(_("Transfers"));
+    auto title_v = g_variant_new_string(_("Files"));
 
     GVariantBuilder b;
     g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
