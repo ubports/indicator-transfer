@@ -434,7 +434,7 @@ private:
   {
     auto reffed_icon_v = get_header_icon();
     auto title_v = g_variant_new_string(_("Files"));
-    const auto visible = header_should_be_visible();
+    const bool visible = header_should_be_visible();
 
     GVariantBuilder b;
     g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
