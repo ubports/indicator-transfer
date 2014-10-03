@@ -316,7 +316,7 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   EXPECT_EQ(std::string("indicator.")+action_name, str);
   g_clear_pointer(&str, g_free);
 
-  // cusory first look at the header
+  // cursory first look at the header
   auto dict = g_action_group_get_action_state(action_group, action_name.c_str());
   EXPECT_TRUE(dict != nullptr);
   EXPECT_TRUE(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
