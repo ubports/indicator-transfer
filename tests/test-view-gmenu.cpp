@@ -273,6 +273,22 @@ TEST_F(GMenuViewFixture, InvokedGActionsCallTheController)
 **** 
 ***/
 
+namespace
+{
+  bool is_header_visible(GActionGroup* action_group, const std::string& header_action_name)
+  {
+    auto dict = g_action_group_get_action_state(action_group, header_action_name.c_str());
+    g_assert(dict != nullptr);
+    g_assert(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
+    auto v = g_variant_lookup_value(dict, "visible", G_VARIANT_TYPE_BOOLEAN);
+    g_assert(v != nullptr);
+    const bool is_visible = g_variant_get_boolean(v);
+    g_clear_pointer(&v, g_variant_unref);
+    g_clear_pointer(&dict, g_variant_unref);
+    return is_visible;
+  }
+}
+
 TEST_F(GMenuViewFixture, PhoneHeader)
 {
   const std::string profile = "phone";
@@ -333,11 +349,9 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   g_clear_pointer(&v, g_variant_unref);
   g_clear_pointer(&dict, g_variant_unref);
 
-
   // Visibility test #1:
   // Change the model to all transfers finished.
   // Confirm that the header is not visible.
-
   for (auto& transfer : m_model->get_all())
     {
       transfer->state = Transfer::FINISHED;
@@ -345,69 +359,33 @@ TEST_F(GMenuViewFixture, PhoneHeader)
     }
 
   wait_msec(200);
-
-  dict = g_action_group_get_action_state(action_group, action_name.c_str());
-  EXPECT_TRUE(dict != nullptr);
-  EXPECT_TRUE(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
-  v = g_variant_lookup_value(dict, "visible", G_VARIANT_TYPE_BOOLEAN);
-  EXPECT_FALSE(g_variant_get_boolean(v));
-  EXPECT_TRUE(v != nullptr);
-  g_clear_pointer(&v, g_variant_unref);
-  g_clear_pointer(&dict, g_variant_unref);
+  EXPECT_FALSE(is_header_visible(action_group, action_name));
 
   // Visibility test #2:
   // Change the model to all transfers finished except one running.
   // Confirm that the header is visible.
-
   auto transfer = m_model->get("a");
   transfer->state = Transfer::RUNNING;
   m_model->emit_changed(transfer->id);
   wait_msec(200);
-
-  dict = g_action_group_get_action_state(action_group, action_name.c_str());
-  EXPECT_TRUE(dict != nullptr);
-  EXPECT_TRUE(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
-  v = g_variant_lookup_value(dict, "visible", G_VARIANT_TYPE_BOOLEAN);
-  EXPECT_TRUE(g_variant_get_boolean(v));
-  EXPECT_TRUE(v != nullptr);
-  g_clear_pointer(&v, g_variant_unref);
-  g_clear_pointer(&dict, g_variant_unref);
+  EXPECT_TRUE(is_header_visible(action_group, action_name));
 
   // Visibility test #3:
   // Change the model to all transfers finished except one paused.
   // Confirm that the header is visible.
-
   transfer = m_model->get("a");
   transfer->state = Transfer::PAUSED;
   m_model->emit_changed(transfer->id);
   wait_msec(200);
-
-  dict = g_action_group_get_action_state(action_group, action_name.c_str());
-  EXPECT_TRUE(dict != nullptr);
-  EXPECT_TRUE(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
-  v = g_variant_lookup_value(dict, "visible", G_VARIANT_TYPE_BOOLEAN);
-  EXPECT_TRUE(g_variant_get_boolean(v));
-  EXPECT_TRUE(v != nullptr);
-  g_clear_pointer(&v, g_variant_unref);
-  g_clear_pointer(&dict, g_variant_unref);
+  EXPECT_TRUE(is_header_visible(action_group, action_name));
 
   // Visibility test #4:
   // Remove all the transfers from the menu.
   // Confirm that the header is not visible.
-
   for (const auto& id : m_model->get_ids())
     m_model->remove(id);
   wait_msec(200);
-
-  dict = g_action_group_get_action_state(action_group, action_name.c_str());
-  EXPECT_TRUE(dict != nullptr);
-  EXPECT_TRUE(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
-  v = g_variant_lookup_value(dict, "visible", G_VARIANT_TYPE_BOOLEAN);
-  EXPECT_FALSE(g_variant_get_boolean(v));
-  EXPECT_TRUE(v != nullptr);
-  g_clear_pointer(&v, g_variant_unref);
-  g_clear_pointer(&dict, g_variant_unref);
-
+  EXPECT_FALSE(is_header_visible(action_group, action_name));
 
   // cleanup
   g_clear_object(&action_group);
