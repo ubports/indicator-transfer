@@ -24,6 +24,7 @@
 #include <transfer/dbus-shared.h>
 #include <transfer/view-gmenu.h>
 
+#include <glib/gi18n.h>
 
 using namespace unity::indicator::transfer;
 
@@ -268,6 +269,132 @@ TEST_F(GMenuViewFixture, InvokedGActionsCallTheController)
 
 /***
 ****
+****   Header
+**** 
+***/
+
+namespace
+{
+  bool is_header_visible(GActionGroup* action_group, const std::string& header_action_name)
+  {
+    auto dict = g_action_group_get_action_state(action_group, header_action_name.c_str());
+    g_assert(dict != nullptr);
+    g_assert(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
+    auto v = g_variant_lookup_value(dict, "visible", G_VARIANT_TYPE_BOOLEAN);
+    g_assert(v != nullptr);
+    const bool is_visible = g_variant_get_boolean(v);
+    g_clear_pointer(&v, g_variant_unref);
+    g_clear_pointer(&dict, g_variant_unref);
+    return is_visible;
+  }
+}
+
+TEST_F(GMenuViewFixture, PhoneHeader)
+{
+  const std::string profile = "phone";
+
+  wait_msec();
+
+  auto connection = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, nullptr);
+
+  // SETUP: get the action group and wait for it to be populated
+  auto dbus_action_group = g_dbus_action_group_get(connection, BUS_NAME, BUS_PATH);
+  auto action_group = G_ACTION_GROUP(dbus_action_group);
+  auto names_strv = g_action_group_list_actions(action_group);
+  if (g_strv_length(names_strv) == 0)
+    {
+      g_strfreev(names_strv);
+      wait_for_signal(dbus_action_group, "action-added");
+      names_strv = g_action_group_list_actions(action_group);
+    }
+  g_clear_pointer(&names_strv, g_strfreev);
+
+  // SETUP: get the menu model and wait for it to be activated
+  auto phone_dbus_menu_model = g_dbus_menu_model_get(connection, BUS_NAME, BUS_PATH"/phone");
+  auto phone_menu_model = G_MENU_MODEL(phone_dbus_menu_model);
+  int n = g_menu_model_get_n_items(phone_menu_model);
+  if (!n)
+    {
+      // give the model a moment to populate its info
+      wait_msec(100);
+      n = g_menu_model_get_n_items(phone_menu_model);
+    }
+  EXPECT_TRUE(phone_menu_model != nullptr);
+  EXPECT_NE(0, n);
+
+  // test to confirm that a header menuitem exists
+  gchar* str = nullptr;
+  g_menu_model_get_item_attribute(phone_menu_model, 0, "x-canonical-type", "s", &str);
+  EXPECT_STREQ("com.canonical.indicator.root", str);
+  g_clear_pointer(&str, g_free);
+  g_menu_model_get_item_attribute(phone_menu_model, 0, G_MENU_ATTRIBUTE_ACTION, "s", &str);
+  const auto action_name = profile + "-header";
+  EXPECT_EQ(std::string("indicator.")+action_name, str);
+  g_clear_pointer(&str, g_free);
+
+  // cursory first look at the header
+  auto dict = g_action_group_get_action_state(action_group, action_name.c_str());
+  EXPECT_TRUE(dict != nullptr);
+  EXPECT_TRUE(g_variant_is_of_type(dict, G_VARIANT_TYPE_VARDICT));
+  auto v = g_variant_lookup_value(dict, "accessible-desc", G_VARIANT_TYPE_STRING);
+  EXPECT_TRUE(v != nullptr);
+  g_variant_unref(v);
+  v = g_variant_lookup_value(dict, "title", G_VARIANT_TYPE_STRING);
+  EXPECT_TRUE(v != nullptr);
+  EXPECT_STREQ(_("Files"), g_variant_get_string(v, nullptr));
+  g_variant_unref(v);
+  v = g_variant_lookup_value(dict, "visible", G_VARIANT_TYPE_BOOLEAN);
+  EXPECT_TRUE(g_variant_get_boolean(v));
+  EXPECT_TRUE(v != nullptr);
+  g_clear_pointer(&v, g_variant_unref);
+  g_clear_pointer(&dict, g_variant_unref);
+
+  // Visibility test #1:
+  // Change the model to all transfers finished.
+  // Confirm that the header is not visible.
+  for (auto& transfer : m_model->get_all())
+    {
+      transfer->state = Transfer::FINISHED;
+      m_model->emit_changed(transfer->id);
+    }
+
+  wait_msec(200);
+  EXPECT_FALSE(is_header_visible(action_group, action_name));
+
+  // Visibility test #2:
+  // Change the model to all transfers finished except one running.
+  // Confirm that the header is visible.
+  auto transfer = m_model->get("a");
+  transfer->state = Transfer::RUNNING;
+  m_model->emit_changed(transfer->id);
+  wait_msec(200);
+  EXPECT_TRUE(is_header_visible(action_group, action_name));
+
+  // Visibility test #3:
+  // Change the model to all transfers finished except one paused.
+  // Confirm that the header is visible.
+  transfer = m_model->get("a");
+  transfer->state = Transfer::PAUSED;
+  m_model->emit_changed(transfer->id);
+  wait_msec(200);
+  EXPECT_TRUE(is_header_visible(action_group, action_name));
+
+  // Visibility test #4:
+  // Remove all the transfers from the menu.
+  // Confirm that the header is not visible.
+  for (const auto& id : m_model->get_ids())
+    m_model->remove(id);
+  wait_msec(200);
+  EXPECT_FALSE(is_header_visible(action_group, action_name));
+
+  // cleanup
+  g_clear_object(&action_group);
+  g_clear_object(&phone_dbus_menu_model);
+  g_clear_object(&connection);
+}
+
+/***
+****
 ****  GMenu
 ****
 ***/
@@ -296,4 +423,3 @@ TEST_F(GMenuViewFixture, DoesExportMenu)
   g_clear_object(&dbus_menu_model);
   g_clear_object(&connection);
 }
-

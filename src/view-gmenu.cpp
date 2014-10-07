@@ -238,7 +238,7 @@ private:
                           g_variant_new_string("accessible-desc"));
     g_variant_builder_add(&b, "{sv}", "label", g_variant_new_string("label"));
     g_variant_builder_add(&b, "{sv}", "title", g_variant_new_string("title"));
-    g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(true));
+    g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(false));
     return g_variant_builder_end(&b);
   }
 
@@ -419,17 +419,29 @@ private:
     return ret;
   }
 
+  /* Show the header if there are any transfers that have begun and are
+     currently incomplete because they're either ongoing or paused. */
+  bool header_should_be_visible() const
+  {
+    for (const auto& transfer : m_model->get_all())
+      if (transfer->state != Transfer::FINISHED)
+        return true;
+
+    return false;
+  }
+
   GVariant* create_header_state()
   {
     auto reffed_icon_v = get_header_icon();
-    auto title_v = g_variant_new_string(_("Transfers"));
+    auto title_v = g_variant_new_string(_("Files"));
+    const bool visible = header_should_be_visible();
 
     GVariantBuilder b;
     g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
     g_variant_builder_add(&b, "{sv}", "title", title_v);
     g_variant_builder_add(&b, "{sv}", "icon", reffed_icon_v);
     g_variant_builder_add(&b, "{sv}", "accessible-desc", title_v);
-    g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(true));
+    g_variant_builder_add(&b, "{sv}", "visible", g_variant_new_boolean(visible));
     auto ret = g_variant_builder_end (&b);
 
     g_variant_unref(reffed_icon_v);
