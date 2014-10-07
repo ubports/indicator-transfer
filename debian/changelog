@@ -1,3 +1,11 @@
+indicator-transfer (0.1+14.10.20141007-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Change the indicator's label to "Files" and only show the indicator
+    if there are unfinished transfers. (LP: #1377275)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 07 Oct 2014 19:48:01 +0000
+
 indicator-transfer (0.1+14.10.20141006-0ubuntu1) utopic; urgency=low
 
   [ Charles Kerr ]
