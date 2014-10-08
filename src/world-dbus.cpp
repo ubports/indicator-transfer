@@ -72,6 +72,9 @@ public:
 
   ~DBusTransfer()
   {
+    if (m_changed_tag)
+      g_source_remove(m_changed_tag);
+
     g_cancellable_cancel(m_cancellable);
     g_clear_object(&m_cancellable);
     g_clear_object(&m_bus);
@@ -239,7 +242,19 @@ private:
     g_clear_pointer(&v, g_variant_unref);
   }
 
-  void emit_changed() { changed()(); }
+  void emit_changed_soon()
+  {
+    if (m_changed_tag == 0)
+        m_changed_tag = g_timeout_add_seconds(1, emit_changed_now, this);
+  }
+
+  static gboolean emit_changed_now(gpointer gself)
+  {
+    auto self = static_cast<DBusTransfer*>(gself);
+    self->m_changed_tag = 0;
+    self->m_changed();
+    return G_SOURCE_REMOVE;
+  }
 
   /* The 'started', 'paused', 'resumed', and 'canceled' signals
      from com.canonical.applications.Download all have a single
@@ -337,7 +352,7 @@ private:
       }
 
     if (changed)
-      emit_changed();
+      emit_changed_soon();
   }
 
   void set_state(State state_in)
@@ -352,7 +367,7 @@ private:
             m_history.clear();
           }
  
-        emit_changed();
+        emit_changed_soon();
       }
   }
 
@@ -363,7 +378,7 @@ private:
     {
       g_debug("changing '%s' error to '%s'", m_ccad_path.c_str(), tmp.c_str());
       error_string = tmp;
-      emit_changed();
+      emit_changed_soon();
     }
   }
 
@@ -374,7 +389,7 @@ private:
       {
         g_debug("changing '%s' path to '%s'", m_ccad_path.c_str(), tmp.c_str());
         local_path = tmp;
-        emit_changed();
+        emit_changed_soon();
       }
 
     // If we don't already have a title,
@@ -394,7 +409,7 @@ private:
       {
         g_debug("changing '%s' title to '%s'", m_ccad_path.c_str(), tmp.c_str());
         title = tmp;
-        emit_changed();
+        emit_changed_soon();
       }
   }
 
@@ -460,7 +475,7 @@ private:
       {
         g_debug("changing '%s' icon to '%s'", m_ccad_path.c_str(), tmp.c_str());
         app_icon = tmp;
-        emit_changed();
+        emit_changed_soon();
       }
   }
 
@@ -589,6 +604,7 @@ private:
 
   core::Signal<> m_changed;
 
+  uint32_t m_changed_tag = 0;
   uint64_t m_received = 0;
   uint64_t m_total_size = 0;
   struct DownloadProgress {
