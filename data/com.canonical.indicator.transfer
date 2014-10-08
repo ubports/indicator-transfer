@@ -8,6 +8,8 @@ ObjectPath=/com/canonical/indicator/transfer/phone
 
 [phone]
 ObjectPath=/com/canonical/indicator/transfer/phone
+Position=71
 
 [phone_greeter]
 ObjectPath=/com/canonical/indicator/transfer/phone
+Position=71

@@ -1,3 +1,10 @@
+indicator-transfer (0.1+14.10.20141006-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Move the position of this indicator on the panel. (LP: #1377294)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 06 Oct 2014 17:36:14 +0000
+
 indicator-transfer (0.1+14.10.20140905-0ubuntu1) utopic; urgency=low
 
   [ Sebastien Bacher ]
