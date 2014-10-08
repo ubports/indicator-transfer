@@ -779,7 +779,9 @@ private:
                           const gchar* signal_name,
                           GVariant* parameters)
   {
-    g_debug("transfer signal: %s %s %s", cucdt_path, signal_name, g_variant_print(parameters, TRUE));
+    gchar* variant_str = g_variant_print(parameters, TRUE);
+    g_debug("transfer signal: %s %s %s", cucdt_path, signal_name, variant_str);
+    g_free(variant_str);
 
     if (!g_strcmp0(signal_name, "DownloadIdChanged"))
       {
@@ -808,7 +810,9 @@ private:
                                  GVariant*          parameters,
                                  gpointer           gself)
   {
-    g_debug("download signal: %s %s %s", ccad_path, signal_name, g_variant_print(parameters, TRUE));
+    gchar* variant_str = g_variant_print(parameters, TRUE);
+    g_debug("download signal: %s %s %s", ccad_path, signal_name, variant_str);
+    g_free(variant_str);
 
     // Route this signal to the DBusTransfer for processing 
     auto self = static_cast<Impl*>(gself);
