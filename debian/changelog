@@ -1,3 +1,11 @@
+indicator-transfer (0.1+14.10.20141009-0ubuntu1) utopic; urgency=low
+
+  [ Charles Kerr ]
+  * Throttle how frequently a transfer item updates its action state and
+    menuitem. (LP: #1378941)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 09 Oct 2014 13:39:39 +0000
+
 indicator-transfer (0.1+14.10.20141007-0ubuntu1) utopic; urgency=low
 
   [ Charles Kerr ]
