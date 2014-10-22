@@ -298,10 +298,10 @@ private:
 
   void update_progress()
   {
-    auto tmp_total_size = 0;
-    auto tmp_progress = 0.0;
-    auto tmp_seconds_left = 0;
-    auto tmp_speed_Bps = 0;
+    uint64_t tmp_total_size = 0;
+    float tmp_progress = 0.0f;
+    int tmp_seconds_left = 0;
+    uint64_t tmp_speed_Bps = 0;
 
     if (m_total_size && m_received)
       {
