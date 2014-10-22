@@ -32,6 +32,10 @@
 
 class GlibFixture : public ::testing::Test
 {
+  public:
+
+    virtual ~GlibFixture() =default;
+
   private:
 
     GLogFunc realLogHandler;
