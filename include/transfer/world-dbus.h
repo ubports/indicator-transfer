@@ -36,7 +36,7 @@ namespace transfer {
 class DBusWorld: public World
 {
 public:
-    DBusWorld(const std::shared_ptr<MutableModel>& model);
+    explicit DBusWorld(const std::shared_ptr<MutableModel>& model);
     ~DBusWorld();
 
     void open(const Transfer::Id& id);
