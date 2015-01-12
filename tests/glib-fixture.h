@@ -17,6 +17,9 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
+#ifndef INDICATOR_DATETIME_TESTS_GLIB_FIXTURE_H
+#define INDICATOR_DATETIME_TESTS_GLIB_FIXTURE_H
+
 #include <map>
 
 #include <glib.h>
@@ -29,6 +32,10 @@
 
 class GlibFixture : public ::testing::Test
 {
+  public:
+
+    virtual ~GlibFixture() =default;
+
   private:
 
     GLogFunc realLogHandler;
@@ -139,3 +146,5 @@ class GlibFixture : public ::testing::Test
 
     GMainLoop * loop;
 };
+
+#endif /* INDICATOR_DATETIME_TESTS_GLIB_FIXTURE_H */

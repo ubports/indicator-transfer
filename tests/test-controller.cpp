@@ -99,7 +99,7 @@ TEST_F(ControllerFixture, ClearAll)
 
   for (const auto& transfer : transfers)
     {
-      std::shared_ptr<Transfer> t(new Transfer);
+      auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
       m_model->add(t);
@@ -142,7 +142,7 @@ TEST_F(ControllerFixture, PauseAll)
 
   for (const auto& transfer : transfers)
     {
-      std::shared_ptr<Transfer> t(new Transfer);
+      auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
       m_model->add(t);
@@ -175,7 +175,7 @@ TEST_F(ControllerFixture, ResumeAll)
 
   for (const auto& transfer : transfers)
     {
-      std::shared_ptr<Transfer> t(new Transfer);
+      auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
       m_model->add(t);
@@ -193,7 +193,7 @@ TEST_F(ControllerFixture, Tap)
 {
   const Transfer::Id id = "id";
 
-  std::shared_ptr<Transfer> t(new Transfer);
+  auto t = std::make_shared<Transfer>();
   t->state = Transfer::QUEUED;
   t->id = id;
   m_model->add(t);
@@ -266,7 +266,7 @@ TEST_F(ControllerFixture, Tap)
 TEST_F(ControllerFixture, Start)
 {
   const Transfer::Id id = "id";
-  std::shared_ptr<Transfer> t(new Transfer);
+  auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
   m_model->add(t);
@@ -286,7 +286,7 @@ TEST_F(ControllerFixture, Start)
 TEST_F(ControllerFixture, Pause)
 {
   const Transfer::Id id = "id";
-  std::shared_ptr<Transfer> t(new Transfer);
+  auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
   m_model->add(t);
@@ -306,7 +306,7 @@ TEST_F(ControllerFixture, Pause)
 TEST_F(ControllerFixture, Resume)
 {
   const Transfer::Id id = "id";
-  std::shared_ptr<Transfer> t(new Transfer);
+  auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
   m_model->add(t);
@@ -326,7 +326,7 @@ TEST_F(ControllerFixture, Resume)
 TEST_F(ControllerFixture, Cancel)
 {
   const Transfer::Id id = "id";
-  std::shared_ptr<Transfer> t(new Transfer);
+  auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
   m_model->add(t);

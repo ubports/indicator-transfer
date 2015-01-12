@@ -298,10 +298,10 @@ private:
 
   void update_progress()
   {
-    auto tmp_total_size = total_size;
-    auto tmp_progress = progress;
-    auto tmp_seconds_left = seconds_left;
-    auto tmp_speed_Bps = speed_Bps;
+    uint64_t tmp_total_size = 0;
+    float tmp_progress = 0.0f;
+    int tmp_seconds_left = 0;
+    uint64_t tmp_speed_Bps = 0;
 
     if (m_total_size && m_received)
       {
@@ -315,13 +315,6 @@ private:
         tmp_speed_Bps = Bps;
         tmp_progress = m_received / (float)m_total_size;
         tmp_seconds_left = seconds;
-      }
-    else
-      {
-        tmp_total_size = 0;
-        tmp_speed_Bps = 0;
-        tmp_progress = 0.0;
-        tmp_seconds_left = -1;
       }
 
     bool changed = false;

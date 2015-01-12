@@ -17,7 +17,11 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
+#ifndef INDICATOR_TRANFSFER_DBUS_SHARED_H
+#define INDICATOR_TRANFSFER_DBUS_SHARED_H
+
 #define BUS_NAME "com.canonical.indicator.transfer"
 
 #define BUS_PATH "/com/canonical/indicator/transfer"
 
+#endif /* INDICATOR_TRANFSFER_DBUS_SHARED_H */
