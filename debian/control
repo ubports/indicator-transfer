@@ -4,8 +4,6 @@ Priority: optional
 Maintainer: Ubuntu Desktop Team <ubuntu-desktop@lists.ubuntu.com>
 Build-Depends: cmake,
                dbus,
-#  make g++ version explicit for ABI safety, see https://wiki.ubuntu.com/cpp-11
-               g++-4.9,
                libglib2.0-dev (>= 2.35.4),
                libproperties-cpp-dev,
                libclick-0.4-dev (>= 0.4.30),
