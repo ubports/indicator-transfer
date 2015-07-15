@@ -626,7 +626,7 @@ class DBusWorld::Impl
 {
 public:
 
-  Impl(const std::shared_ptr<MutableModel>& model):
+  explicit Impl(const std::shared_ptr<MutableModel>& model):
     m_cancellable(g_cancellable_new()),
     m_model(model)
   {
