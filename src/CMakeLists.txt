@@ -11,6 +11,7 @@ set (SERVICE_LIB_HANDWRITTEN_SOURCES
      view.cpp
      view-gmenu.cpp
      world.cpp
+     world-plugin.cpp
      world-dbus.cpp)
 
 add_library (${SERVICE_LIB} STATIC
@@ -31,4 +32,8 @@ install (TARGETS ${SERVICE_EXEC} RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_PKGLIB
 # but not the generated ones...
 set_property (SOURCE ${SERVICE_LIB_HANDWRITTEN_SOURCES} ${SERVICE_EXEC_HANDWRITTEN_SOURCES}
               APPEND_STRING PROPERTY COMPILE_FLAGS " -std=c++11 -g ${CXX_WARNING_ARGS} ${GCOV_FLAGS}")
+
+set_property (SOURCE world-plugin.cpp
+              APPEND PROPERTY COMPILE_DEFINITIONS PLUGINDIR="${CMAKE_INSTALL_FULL_PKGLIBEXECDIR}")
+
 

@@ -33,6 +33,7 @@ include (FindPkgConfig)
 
 pkg_check_modules(SERVICE_DEPS REQUIRED
                   glib-2.0>=2.36
+                  gmodule-2.0>=2.36
                   gio-unix-2.0>=2.36
                   properties-cpp>=0.0.1
                   click-0.4>=0.4.30
