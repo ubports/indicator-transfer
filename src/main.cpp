@@ -20,7 +20,7 @@
 #include <transfer/controller.h>
 #include <transfer/model.h>
 #include <transfer/view-gmenu.h>
-#include <transfer/source-plugin.h>
+#include <transfer/multisource.h>
 
 #include <glib/gi18n.h> // bindtextdomain()
 #include <gio/gio.h>
@@ -44,9 +44,10 @@ main(int /*argc*/, char** /*argv*/)
     auto loop = g_main_loop_new(nullptr, false);
 
     // run until we lose the busname
-    auto model = std::make_shared<MutableModel>();
+    //auto model = std::make_shared<MutableModel>();
     //auto source = std::shared_ptr<Source>(new DBusSource(model));
-    auto source = std::make_shared<PluginSource>(model);
+    auto source = std::make_shared<MultiSource>();//PluginSource>(model);
+    auto model = source->get_model();
     auto controller = std::make_shared<Controller>(model, source);
     GMenuView menu_view (model, controller);
     // FIXME: listen for busname-lost

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2015 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -17,38 +17,42 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_SOURCE_H
-#define INDICATOR_TRANSFER_SOURCE_H
+#ifndef INDICATOR_TRANSFER_MULTISOURCE_H
+#define INDICATOR_TRANSFER_MULTISOURCE_H
 
-#include <transfer/model.h>
-#include <transfer/transfer.h> // Id
-
-#include <memory> // std::shared_ptr
+#include <transfer/source.h>
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
 /**
- * \brief Facade for everything outside of indicator-transfer
+ * \brief A multiplexer/demultiplexer for sources
  */
-class Source
+class MultiSource: public Source
 {
 public:
-    virtual ~Source();
+    MultiSource();
+    virtual ~MultiSource();
 
-    virtual void open(const Transfer::Id& id) =0;
-    virtual void start(const Transfer::Id& id) =0;
-    virtual void pause(const Transfer::Id& id) =0;
-    virtual void resume(const Transfer::Id& id) =0;
-    virtual void cancel(const Transfer::Id& id) =0;
-    virtual void open_app(const Transfer::Id& id) =0;
+    // Source    
+    void open(const Transfer::Id& id) override;
+    void start(const Transfer::Id& id) override;
+    void pause(const Transfer::Id& id) override;
+    void resume(const Transfer::Id& id) override;
+    void cancel(const Transfer::Id& id) override;
+    void open_app(const Transfer::Id& id) override;
+    std::shared_ptr<MutableModel> get_model() override;
 
-    virtual std::shared_ptr<MutableModel> get_model() =0;
+    void add_source(const std::shared_ptr<Source>& source);
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_SOURCE_H
+#endif // INDICATOR_TRANSFER_MULTISOURCE_H
