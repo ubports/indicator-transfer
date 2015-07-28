@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2015 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -17,36 +17,40 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_WORLD_H
-#define INDICATOR_TRANSFER_WORLD_H
+#ifndef INDICATOR_TRANSFER_SOURCE_PLUGIN_H
+#define INDICATOR_TRANSFER_SOURCE_PLUGIN_H
 
-#include <transfer/model.h>
-#include <transfer/transfer.h> // Id
+#include <transfer/source.h>
 
-#include <memory> // std::shared_ptr
+#include <memory> // unique_ptr
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
 /**
- * \brief Facade for everything outside of indicator-transfer
+ * \brief a Source that gets its updates & events from plugins
  */
-class World
+class PluginSource: public Source
 {
 public:
-    virtual ~World();
+    explicit PluginSource(const std::shared_ptr<MutableModel>& model);
+    ~PluginSource();
 
-    virtual void open(const Transfer::Id& id) =0;
-    virtual void start(const Transfer::Id& id) =0;
-    virtual void pause(const Transfer::Id& id) =0;
-    virtual void resume(const Transfer::Id& id) =0;
-    virtual void cancel(const Transfer::Id& id) =0;
-    virtual void open_app(const Transfer::Id& id) =0;
+    void open(const Transfer::Id& id);
+    void start(const Transfer::Id& id);
+    void pause(const Transfer::Id& id);
+    void resume(const Transfer::Id& id);
+    void cancel(const Transfer::Id& id);
+    void open_app(const Transfer::Id& id);
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_WORLD_H
+#endif // INDICATOR_TRANSFER_SOURCE_PLUGINSH

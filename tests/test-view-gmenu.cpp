@@ -19,7 +19,7 @@
 
 #include "glib-fixture.h"
 #include "controller-mock.h"
-#include "world-mock.h"
+#include "source-mock.h"
 
 #include <transfer/dbus-shared.h>
 #include <transfer/view-gmenu.h>
@@ -36,7 +36,7 @@ private:
 protected:
 
   GTestDBus* bus = nullptr;
-  std::shared_ptr<MockWorld> m_world;
+  std::shared_ptr<MockSource> m_source;
   std::shared_ptr<MutableModel> m_model;
   std::shared_ptr<MockController> m_controller;
   std::shared_ptr<GMenuView> m_view;
@@ -52,8 +52,8 @@ protected:
     g_setenv("DBUS_SYSTEM_BUS_ADDRESS", address, true);
     g_setenv("DBUS_SESSION_BUS_ADDRESS", address, true);
 
-    // bring up the world
-    m_world.reset(new MockWorld);
+    // bring up the source
+    m_source.reset(new MockSource);
     m_model.reset(new MutableModel);
     std::shared_ptr<Transfer> t;
     t.reset(new Transfer);
@@ -68,17 +68,17 @@ protected:
     t->id = "c";
     t->state = Transfer::FINISHED;
     m_model->add(t);
-    m_controller.reset(new MockController(m_model, m_world));
+    m_controller.reset(new MockController(m_model, m_source));
     m_view.reset(new GMenuView(m_model, m_controller));
   }
 
   void TearDown()
   {
-    // empty the world
+    // empty the source
     m_view.reset();
     m_controller.reset();
     m_model.reset();
-    m_world.reset();
+    m_source.reset();
 
     // bring down the bus
     GError * error = nullptr;

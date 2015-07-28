@@ -17,42 +17,36 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_WORLD_DBUS_H
-#define INDICATOR_TRANSFER_WORLD_DBUS_H
+#ifndef INDICATOR_TRANSFER_SOURCE_H
+#define INDICATOR_TRANSFER_SOURCE_H
 
-#include <transfer/world.h>
+#include <transfer/model.h>
+#include <transfer/transfer.h> // Id
 
-#include <gio/gio.h>
-
-#include <set>
+#include <memory> // std::shared_ptr
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
 /**
- * \brief a World that gets its updates & events from DBus
+ * \brief Facade for everything outside of indicator-transfer
  */
-class DBusWorld: public World
+class Source
 {
 public:
-    explicit DBusWorld(const std::shared_ptr<MutableModel>& model);
-    ~DBusWorld();
+    virtual ~Source();
 
-    void open(const Transfer::Id& id);
-    void start(const Transfer::Id& id);
-    void pause(const Transfer::Id& id);
-    void resume(const Transfer::Id& id);
-    void cancel(const Transfer::Id& id);
-    void open_app(const Transfer::Id& id);
-
-private:
-    class Impl;
-    std::unique_ptr<Impl> impl;
+    virtual void open(const Transfer::Id& id) =0;
+    virtual void start(const Transfer::Id& id) =0;
+    virtual void pause(const Transfer::Id& id) =0;
+    virtual void resume(const Transfer::Id& id) =0;
+    virtual void cancel(const Transfer::Id& id) =0;
+    virtual void open_app(const Transfer::Id& id) =0;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_WORLD_H
+#endif // INDICATOR_TRANSFER_SOURCE_H

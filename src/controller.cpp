@@ -28,9 +28,9 @@ namespace transfer {
 ***/
 
 Controller::Controller(const std::shared_ptr<MutableModel>& model,
-                       const std::shared_ptr<World>& world):
+                       const std::shared_ptr<Source>& source):
   m_model(model),
-  m_world(world)
+  m_source(source)
 {
 }
 
@@ -77,38 +77,38 @@ void Controller::pause(const Transfer::Id& id)
 {
   const auto& transfer = m_model->get(id);
   if (transfer && transfer->can_pause())
-    m_world->pause(id);
+    m_source->pause(id);
 }
 
 void Controller::cancel(const Transfer::Id& id)
 {
   const auto& transfer = m_model->get(id);
   if (transfer && transfer->can_cancel())
-    m_world->cancel(id);
+    m_source->cancel(id);
 }
 
 void Controller::resume(const Transfer::Id& id)
 {
   const auto& transfer = m_model->get(id);
   if (transfer && transfer->can_resume())
-    m_world->resume(id);
+    m_source->resume(id);
 }
 
 void Controller::start(const Transfer::Id& id)
 {
   const auto& transfer = m_model->get(id);
   if (transfer && transfer->can_start())
-    m_world->start(id);
+    m_source->start(id);
 }
 
 void Controller::open(const Transfer::Id& id)
 {
-  m_world->open(id);
+  m_source->open(id);
 }
 
 void Controller::open_app(const Transfer::Id& id)
 {
-  m_world->open_app(id);
+  m_source->open_app(id);
 }
 
 /***

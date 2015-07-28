@@ -20,7 +20,7 @@
 #include "glib-fixture.h"
 
 #include <transfer/controller.h>
-#include <transfer/world-plugin.h>
+#include <transfer/source-plugin.h>
 
 
 using namespace unity::indicator::transfer;
@@ -36,7 +36,7 @@ protected:
   GTestDBus* bus = nullptr;
 
   std::shared_ptr<MutableModel> m_model;
-  std::shared_ptr<World> m_world;
+  std::shared_ptr<Source> m_source;
   std::shared_ptr<Controller> m_controller;
 
   void SetUp()
@@ -44,21 +44,21 @@ protected:
     super::SetUp();
 
     m_model.reset(new MutableModel);
-    m_world.reset(new PluginWorld(m_model));
-    m_controller.reset(new Controller(m_model, m_world));
+    m_source.reset(new PluginSource(m_model));
+    m_controller.reset(new Controller(m_model, m_source));
   }
 
   void TearDown()
   {
     m_controller.reset();
-    m_world.reset();
+    m_source.reset();
     m_model.reset();
 
     super::TearDown();
   }
 };
 
-TEST_F(PluginFixture, HelloWorld)
+TEST_F(PluginFixture, HelloSource)
 {
   // confirms that the Test DBus SetUp() and TearDown() works
 }

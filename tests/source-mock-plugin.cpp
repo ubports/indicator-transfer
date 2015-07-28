@@ -17,10 +17,10 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include "world-mock.h"
+#include "source-mock.h"
 
 #include <transfer/model.h>
-#include <transfer/world.h>
+#include <transfer/source.h>
 
 #include <glib.h>
 #include <gmodule.h>
@@ -31,10 +31,10 @@ using namespace unity::indicator::transfer;
 
 extern "C"
 {
-G_MODULE_EXPORT std::shared_ptr<World> get_world(const std::shared_ptr<MutableModel>&);
+G_MODULE_EXPORT std::shared_ptr<Source> get_source(const std::shared_ptr<MutableModel>&);
 
-G_MODULE_EXPORT std::shared_ptr<World> get_world(const std::shared_ptr<MutableModel>& /*model*/)
+G_MODULE_EXPORT std::shared_ptr<Source> get_source(const std::shared_ptr<MutableModel>& /*model*/)
 {
-  return std::make_shared<MockWorld>();
+  return std::make_shared<MockSource>();
 }
 }

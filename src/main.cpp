@@ -20,7 +20,7 @@
 #include <transfer/controller.h>
 #include <transfer/model.h>
 #include <transfer/view-gmenu.h>
-#include <transfer/world-plugin.h>
+#include <transfer/source-plugin.h>
 
 #include <glib/gi18n.h> // bindtextdomain()
 #include <gio/gio.h>
@@ -45,9 +45,9 @@ main(int /*argc*/, char** /*argv*/)
 
     // run until we lose the busname
     auto model = std::make_shared<MutableModel>();
-    //auto world = std::shared_ptr<World>(new DBusWorld(model));
-    auto world = std::make_shared<PluginWorld>(model);
-    auto controller = std::make_shared<Controller>(model, world);
+    //auto source = std::shared_ptr<Source>(new DBusSource(model));
+    auto source = std::make_shared<PluginSource>(model);
+    auto controller = std::make_shared<Controller>(model, source);
     GMenuView menu_view (model, controller);
     // FIXME: listen for busname-lost
     g_main_loop_run(loop);

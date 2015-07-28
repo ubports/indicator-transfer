@@ -17,7 +17,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/world-dbus.h>
+#include <transfer/source-dbus.h>
 
 #include <click.h>
 #include <ubuntu-app-launch.h>
@@ -622,7 +622,7 @@ private:
 ****
 ***/
 
-class DBusWorld::Impl
+class DBusSource::Impl
 {
 public:
 
@@ -882,47 +882,47 @@ private:
 ****
 ***/
 
-DBusWorld::DBusWorld(const std::shared_ptr<MutableModel>& model):
+DBusSource::DBusSource(const std::shared_ptr<MutableModel>& model):
   impl(new Impl(model))
 {
 }
 
-DBusWorld::~DBusWorld()
+DBusSource::~DBusSource()
 {
 }
 
 void
-DBusWorld::open(const Transfer::Id& id)
+DBusSource::open(const Transfer::Id& id)
 {
   impl->open(id);
 }
 
 void
-DBusWorld::start(const Transfer::Id& id)
+DBusSource::start(const Transfer::Id& id)
 {
   impl->start(id);
 }
 
 void
-DBusWorld::pause(const Transfer::Id& id)
+DBusSource::pause(const Transfer::Id& id)
 {
   impl->pause(id);
 }
 
 void
-DBusWorld::resume(const Transfer::Id& id)
+DBusSource::resume(const Transfer::Id& id)
 {
   impl->resume(id);
 }
 
 void
-DBusWorld::cancel(const Transfer::Id& id)
+DBusSource::cancel(const Transfer::Id& id)
 {
   impl->cancel(id);
 }
 
 void
-DBusWorld::open_app(const Transfer::Id& id)
+DBusSource::open_app(const Transfer::Id& id)
 {
   impl->open_app(id);
 }

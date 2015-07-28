@@ -17,7 +17,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/world-plugin.h>
+#include <transfer/source-plugin.h>
 
 #include <gmodule.h>
 
@@ -29,7 +29,7 @@ namespace transfer {
 ****
 ***/
 
-class PluginWorld::Impl
+class PluginSource::Impl
 {
 public:
 
@@ -55,22 +55,22 @@ public:
           { 
             g_warning("Unable to load module '%s'", filename);
           }
-          else if (!g_module_symbol(module, "get_world", &symbol))
+          else if (!g_module_symbol(module, "get_source", &symbol))
           {
             g_warning("Unable to use module '%s'", filename);
           }
           else
           {
-            using get_world_func = std::shared_ptr<World>(const std::shared_ptr<MutableModel>&);
+            using get_source_func = std::shared_ptr<Source>(const std::shared_ptr<MutableModel>&);
             auto model = std::make_shared<MutableModel>();
-            auto world = reinterpret_cast<get_world_func*>(symbol)(model);
-            if (world)
+            auto source = reinterpret_cast<get_source_func*>(symbol)(model);
+            if (source)
             {
-              Sandbox sandbox { module, world, model };
+              Sandbox sandbox { module, source, model };
               m_sandboxes.push_back(sandbox);
               g_debug("Loaded plugin '%s'", filename);
 
-              // FIXME: gotta listen to signals from world, mux the ids, and re-emit them
+              // FIXME: gotta listen to signals from source, mux the ids, and re-emit them
             }
           }
 
@@ -134,9 +134,9 @@ public:
 
 private:
 
-  std::pair<std::shared_ptr<World>,Transfer::Id> lookup(const Transfer::Id& id)
+  std::pair<std::shared_ptr<Source>,Transfer::Id> lookup(const Transfer::Id& id)
   {
-    std::shared_ptr<World> world;
+    std::shared_ptr<Source> source;
     Transfer::Id demuxed_id;
     
     auto tokens = g_strsplit(id.c_str(), ":", 2);
@@ -145,13 +145,13 @@ private:
         unsigned int i = atoi(tokens[0]);
         if (i<m_sandboxes.size())
         {
-            world = m_sandboxes[i].world;
+            source = m_sandboxes[i].source;
             demuxed_id = tokens[1];
         }
     }
     g_strfreev(tokens);
 
-    return std::make_pair(world, demuxed_id);
+    return std::make_pair(source, demuxed_id);
   }
 
   std::shared_ptr<MutableModel> m_model;
@@ -159,7 +159,7 @@ private:
   struct Sandbox
   {
     GModule * module;
-    std::shared_ptr<World> world;
+    std::shared_ptr<Source> source;
     std::shared_ptr<MutableModel> model;
   };
 
@@ -170,47 +170,47 @@ private:
 ****
 ***/
 
-PluginWorld::PluginWorld(const std::shared_ptr<MutableModel>& model):
+PluginSource::PluginSource(const std::shared_ptr<MutableModel>& model):
   impl(new Impl(model))
 {
 }
 
-PluginWorld::~PluginWorld()
+PluginSource::~PluginSource()
 {
 }
 
 void
-PluginWorld::open(const Transfer::Id& id)
+PluginSource::open(const Transfer::Id& id)
 {
   impl->open(id);
 }
 
 void
-PluginWorld::start(const Transfer::Id& id)
+PluginSource::start(const Transfer::Id& id)
 {
   impl->start(id);
 }
 
 void
-PluginWorld::pause(const Transfer::Id& id)
+PluginSource::pause(const Transfer::Id& id)
 {
   impl->pause(id);
 }
 
 void
-PluginWorld::resume(const Transfer::Id& id)
+PluginSource::resume(const Transfer::Id& id)
 {
   impl->resume(id);
 }
 
 void
-PluginWorld::cancel(const Transfer::Id& id)
+PluginSource::cancel(const Transfer::Id& id)
 {
   impl->cancel(id);
 }
 
 void
-PluginWorld::open_app(const Transfer::Id& id)
+PluginSource::open_app(const Transfer::Id& id)
 {
   impl->open_app(id);
 }

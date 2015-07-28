@@ -22,7 +22,7 @@
 
 #include <transfer/model.h>
 #include <transfer/transfer.h>
-#include <transfer/world.h>
+#include <transfer/source.h>
 
 #include <memory> // std::shared_ptr
 
@@ -37,7 +37,7 @@ class Controller
 {
 public:
     Controller(const std::shared_ptr<MutableModel>& model,
-               const std::shared_ptr<World>& world);
+               const std::shared_ptr<Source>& source);
     virtual ~Controller();
 
     virtual void pause_all();
@@ -53,7 +53,7 @@ public:
 
 private:
     std::shared_ptr<MutableModel> m_model;
-    std::shared_ptr<World> m_world;
+    std::shared_ptr<Source> m_source;
 };
 
 } // namespace transfer

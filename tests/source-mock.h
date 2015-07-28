@@ -17,25 +17,33 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/world.h>
+#ifndef INDICATOR_TRANSFER_WORLD_MOCK_H
+#define INDICATOR_TRANSFER_WORLD_MOCK_H
+
+#include <transfer/source.h>
+
+#include "gmock/gmock.h"
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
-/***
-****
-***/
-
-World::~World()
+/**
+ * \brief a Source that gets its updates & events from DBus
+ */
+class MockSource: public Source
 {
-}
-
-
-/***
-****
-***/
+public:
+  MOCK_METHOD1(open, void(const Transfer::Id&));
+  MOCK_METHOD1(start, void(const Transfer::Id&));
+  MOCK_METHOD1(pause, void(const Transfer::Id&));
+  MOCK_METHOD1(resume, void(const Transfer::Id&));
+  MOCK_METHOD1(cancel, void(const Transfer::Id&));
+  MOCK_METHOD1(open_app, void(const Transfer::Id&));
+};
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
+
+#endif // INDICATOR_TRANSFER_WORLD_MOCK_H

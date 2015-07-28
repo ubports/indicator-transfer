@@ -17,38 +17,42 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_CONTROLLER_MOCK_H
-#define INDICATOR_TRANSFER_CONTROLLER_MOCK_H
+#ifndef INDICATOR_TRANSFER_SOURCE_DBUS_H
+#define INDICATOR_TRANSFER_SOURCE_DBUS_H
 
-#include <transfer/controller.h> // parent class
+#include <transfer/source.h>
 
-#include "gmock/gmock.h"
+#include <gio/gio.h>
+
+#include <set>
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
-class MockController: public Controller
+/**
+ * \brief a Source that gets its updates & events from DBus
+ */
+class DBusSource: public Source
 {
 public:
-  MockController(const std::shared_ptr<MutableModel>& model, 
-                 const std::shared_ptr<Source>& source):
-    Controller(model, source) {}
+    explicit DBusSource(const std::shared_ptr<MutableModel>& model);
+    ~DBusSource();
 
-  MOCK_METHOD0(pause_all, void());
-  MOCK_METHOD0(resume_all, void());
-  MOCK_METHOD0(clear_all, void());
-  MOCK_METHOD1(tap, void(const Transfer::Id&));
-  MOCK_METHOD1(start, void(const Transfer::Id&));
-  MOCK_METHOD1(pause, void(const Transfer::Id&));
-  MOCK_METHOD1(cancel, void(const Transfer::Id&));
-  MOCK_METHOD1(resume, void(const Transfer::Id&));
-  MOCK_METHOD1(open, void(const Transfer::Id&));
-  MOCK_METHOD1(open_app, void(const Transfer::Id&));
+    void open(const Transfer::Id& id);
+    void start(const Transfer::Id& id);
+    void pause(const Transfer::Id& id);
+    void resume(const Transfer::Id& id);
+    void cancel(const Transfer::Id& id);
+    void open_app(const Transfer::Id& id);
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_CONTROLLER_MOCK_H
+#endif // INDICATOR_TRANSFER_SOURCE_H
