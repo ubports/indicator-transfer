@@ -626,7 +626,7 @@ class DMSource::Impl
 {
 public:
 
-  explicit Impl():
+  Impl():
     m_cancellable(g_cancellable_new()),
     m_model(std::make_shared<MutableModel>())
   {

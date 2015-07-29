@@ -1,3 +1,14 @@
+indicator-transfer (0.1+15.10.20150727-0ubuntu1) wily; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Charles Kerr ]
+  * Remove the g++-4.9 explicit dependency to prepare for gcc5
+    migration. (LP: #1452328)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Mon, 27 Jul 2015 18:07:21 +0000
+
 indicator-transfer (0.1+15.04.20150112-0ubuntu1) vivid; urgency=low
 
   [ Charles Kerr ]
