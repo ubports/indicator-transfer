@@ -31,6 +31,14 @@ namespace transfer {
 
 /**
  * \brief Facade for everything outside of indicator-transfer
+ *
+ * A Source is where Transfer items come from; e.g. DMSource
+ * watches DownloadManager on the bus and pulls Transfers from
+ * signals emitted by it.
+ *
+ * It also handles indicator-transfer pauses, stops, resumes,
+ * etc. Transfers. For example, DMSource delegates these requests
+ * to DownloadManager over dbus.
  */
 class Source
 {
