@@ -17,8 +17,8 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_SOURCE_DBUS_H
-#define INDICATOR_TRANSFER_SOURCE_DBUS_H
+#ifndef INDICATOR_TRANSFER_DM_SOURCE_H
+#define INDICATOR_TRANSFER_DM_SOURCE_H
 
 #include <transfer/source.h>
 
@@ -31,20 +31,21 @@ namespace indicator {
 namespace transfer {
 
 /**
- * \brief a Source that gets its updates & events from DBus
+ * \brief a Source that gets its updates & events from the Download Manager.
  */
-class DBusSource: public Source
+class DMSource: public Source
 {
 public:
-    explicit DBusSource(const std::shared_ptr<MutableModel>& model);
-    ~DBusSource();
+    DMSource();
+    ~DMSource();
 
-    void open(const Transfer::Id& id);
-    void start(const Transfer::Id& id);
-    void pause(const Transfer::Id& id);
-    void resume(const Transfer::Id& id);
-    void cancel(const Transfer::Id& id);
-    void open_app(const Transfer::Id& id);
+    void open(const Transfer::Id& id) override;
+    void start(const Transfer::Id& id) override;
+    void pause(const Transfer::Id& id) override;
+    void resume(const Transfer::Id& id) override;
+    void cancel(const Transfer::Id& id) override;
+    void open_app(const Transfer::Id& id) override;
+    std::shared_ptr<MutableModel> get_model() override;
 
 private:
     class Impl;
@@ -55,4 +56,4 @@ private:
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_SOURCE_H
+#endif // INDICATOR_TRANSFER_DM_SOURCE_H

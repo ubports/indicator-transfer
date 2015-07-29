@@ -17,7 +17,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include "source-mock.h"
+#include <transfer/dm-source.h>
 
 #include <gmodule.h>
 
@@ -25,10 +25,12 @@ using namespace unity::indicator::transfer;
 
 extern "C"
 {
+
 G_MODULE_EXPORT Source* get_source();
 
 G_MODULE_EXPORT Source* get_source()
 {
-  return new MockSource{};
+  return new unity::indicator::transfer::DMSource{};
 }
+
 }

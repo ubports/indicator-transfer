@@ -44,9 +44,7 @@ main(int /*argc*/, char** /*argv*/)
     auto loop = g_main_loop_new(nullptr, false);
 
     // run until we lose the busname
-    auto plugin_dir = g_get_current_dir();
-    auto source = std::make_shared<PluginSource>(plugin_dir);
-    g_free(plugin_dir);
+    auto source = std::make_shared<PluginSource>(PLUGINDIR);
     auto model = source->get_model();
     auto controller = std::make_shared<Controller>(model, source);
     GMenuView menu_view (model, controller);

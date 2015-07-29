@@ -37,13 +37,14 @@ public:
     m_owner(owner)
   {
     GError * error = nullptr;
+    g_debug("plugin_dir '%s'", plugin_dir.c_str());
     GDir * dir = g_dir_open(plugin_dir.c_str(), 0, &error);
     if (dir != nullptr)
     {
       const gchar * name;
       while ((name = g_dir_read_name(dir)))
       {
-        if (g_str_has_suffix(name, ".so"))
+        if (g_str_has_suffix(name, G_MODULE_SUFFIX))
         {
           gchar * filename = g_build_filename(plugin_dir.c_str(), name, nullptr);
           GModule * mod = g_module_open(filename, G_MODULE_BIND_LOCAL);

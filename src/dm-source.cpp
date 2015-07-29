@@ -17,7 +17,7 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/source-dbus.h>
+#include <transfer/dm-source.h>
 
 #include <click.h>
 #include <ubuntu-app-launch.h>
@@ -44,21 +44,21 @@ static constexpr char const * CH_TRANSFER_IFACE_NAME {"com.ubuntu.content.dbus.T
 /**
  * A Transfer whose state comes from content-hub and ubuntu-download-manager.
  * 
- * Each DBusTransfer tracks a com.canonical.applications.Download (ccad) object
+ * Each DMTransfer tracks a com.canonical.applications.Download (ccad) object
  * from ubuntu-download-manager. The ccad is used for pause/resume/cancel,
  * state change / download progress signals, etc.
  *
- * Each DBusTransfer also tracks a com.ubuntu.content.dbus.Transfer (cucdt)
+ * Each DMTransfer also tracks a com.ubuntu.content.dbus.Transfer (cucdt)
  * object from content-hub. The cucdt is used for learning the download's peer
  * and for calling Charge() to launch the peer's app.
  */
-class DBusTransfer: public Transfer
+class DMTransfer: public Transfer
 {
 public:
 
-  DBusTransfer(GDBusConnection* connection,
-               const std::string& ccad_path,
-               const std::string& cucdt_path):
+  DMTransfer(GDBusConnection* connection,
+             const std::string& ccad_path,
+             const std::string& cucdt_path):
     m_bus(G_DBUS_CONNECTION(g_object_ref(connection))),
     m_cancellable(g_cancellable_new()),
     m_ccad_path(ccad_path),
@@ -70,7 +70,7 @@ public:
     get_cucdt_properties();
   }
 
-  ~DBusTransfer()
+  ~DMTransfer()
   {
     if (m_changed_tag)
       g_source_remove(m_changed_tag);
@@ -250,7 +250,7 @@ private:
 
   static gboolean emit_changed_now(gpointer gself)
   {
-    auto self = static_cast<DBusTransfer*>(gself);
+    auto self = static_cast<DMTransfer*>(gself);
     self->m_changed_tag = 0;
     self->m_changed();
     return G_SOURCE_REMOVE;
@@ -496,7 +496,7 @@ private:
         const gchar* store = nullptr;
         g_variant_get_child(v, 0, "&s", &store);
         if (store != nullptr)
-          static_cast<DBusTransfer*>(gself)->set_store(store);
+          static_cast<DMTransfer*>(gself)->set_store(store);
         g_variant_unref(v);
       }
   }
@@ -533,7 +533,7 @@ private:
         g_variant_get_child(v, 0, "t", &n);
         g_variant_unref(v);
 
-        auto self = static_cast<DBusTransfer*>(gself);
+        auto self = static_cast<DMTransfer*>(gself);
         self->m_total_size = n;
         self->update_progress();
       }
@@ -550,7 +550,7 @@ private:
         g_variant_get_child(v, 0, "t", &n);
         g_variant_unref(v);
 
-        auto self = static_cast<DBusTransfer*>(gself);
+        auto self = static_cast<DMTransfer*>(gself);
         self->m_received = n;
         self->update_progress();
       }
@@ -622,13 +622,13 @@ private:
 ****
 ***/
 
-class DBusSource::Impl
+class DMSource::Impl
 {
 public:
 
-  explicit Impl(const std::shared_ptr<MutableModel>& model):
+  explicit Impl():
     m_cancellable(g_cancellable_new()),
-    m_model(model)
+    m_model(std::make_shared<MutableModel>())
   {
     g_bus_get(G_BUS_TYPE_SESSION, m_cancellable, on_bus_ready, this);
 
@@ -688,6 +688,11 @@ public:
     auto transfer = find_transfer_by_id(id);
     g_return_if_fail(transfer);
     transfer->open_app();
+  }
+
+  std::shared_ptr<MutableModel> get_model()
+  {
+    return m_model;
   }
 
 private:
@@ -788,7 +793,7 @@ private:
       }
     else
       {
-        // Route this signal to the DBusTransfer for processing
+        // Route this signal to the DMTransfer for processing
         auto transfer = find_transfer_by_cucdt_path(cucdt_path);
         if (transfer)
           transfer->handle_cucdt_signal(signal_name, parameters);
@@ -807,7 +812,7 @@ private:
     g_debug("download signal: %s %s %s", ccad_path, signal_name, variant_str);
     g_free(variant_str);
 
-    // Route this signal to the DBusTransfer for processing 
+    // Route this signal to the DMTransfer for processing 
     auto self = static_cast<Impl*>(gself);
     auto transfer = self->find_transfer_by_ccad_path(ccad_path);
     if (transfer)
@@ -818,11 +823,11 @@ private:
   ****
   ***/
 
-  std::shared_ptr<DBusTransfer> find_transfer_by_ccad_path(const std::string& path)
+  std::shared_ptr<DMTransfer> find_transfer_by_ccad_path(const std::string& path)
   {
     for (const auto& transfer : m_model->get_all())
       {
-        const auto tmp = std::static_pointer_cast<DBusTransfer>(transfer);
+        const auto tmp = std::static_pointer_cast<DMTransfer>(transfer);
 
         if (tmp && (path == tmp->ccad_path()))
           return tmp;
@@ -831,11 +836,11 @@ private:
     return nullptr;
   }
 
-  std::shared_ptr<DBusTransfer> find_transfer_by_cucdt_path(const std::string& path)
+  std::shared_ptr<DMTransfer> find_transfer_by_cucdt_path(const std::string& path)
   {
     for (const auto& transfer : m_model->get_all())
       {
-        const auto tmp = std::static_pointer_cast<DBusTransfer>(transfer);
+        const auto tmp = std::static_pointer_cast<DMTransfer>(transfer);
 
         if (tmp && (path == tmp->cucdt_path()))
           return tmp;
@@ -851,11 +856,11 @@ private:
     if (m_removed_ccad.count(ccad_path))
       return;
 
-    auto new_transfer = std::make_shared<DBusTransfer>(m_bus, ccad_path, cucdt_path);
+    auto new_transfer = std::make_shared<DMTransfer>(m_bus, ccad_path, cucdt_path);
 
     m_model->add(new_transfer);
 
-    // when one of the DBusTransfer's properties changes,
+    // when one of the DMTransfer's properties changes,
     // emit a change signal for the model
     const auto id = new_transfer->id;
     new_transfer->changed().connect([this,id]{
@@ -864,11 +869,11 @@ private:
     });
   }
 
-  std::shared_ptr<DBusTransfer> find_transfer_by_id(const Transfer::Id& id)
+  std::shared_ptr<DMTransfer> find_transfer_by_id(const Transfer::Id& id)
   {
     auto transfer = m_model->get(id);
-    g_return_val_if_fail(transfer, std::shared_ptr<DBusTransfer>());
-    return std::static_pointer_cast<DBusTransfer>(transfer);
+    g_return_val_if_fail(transfer, std::shared_ptr<DMTransfer>());
+    return std::static_pointer_cast<DMTransfer>(transfer);
   }
 
   GDBusConnection* m_bus = nullptr;
@@ -882,55 +887,60 @@ private:
 ****
 ***/
 
-DBusSource::DBusSource(const std::shared_ptr<MutableModel>& model):
-  impl(new Impl(model))
+DMSource::DMSource():
+  impl(new Impl{})
 {
 }
 
-DBusSource::~DBusSource()
+DMSource::~DMSource()
 {
 }
 
 void
-DBusSource::open(const Transfer::Id& id)
+DMSource::open(const Transfer::Id& id)
 {
   impl->open(id);
 }
 
 void
-DBusSource::start(const Transfer::Id& id)
+DMSource::start(const Transfer::Id& id)
 {
   impl->start(id);
 }
 
 void
-DBusSource::pause(const Transfer::Id& id)
+DMSource::pause(const Transfer::Id& id)
 {
   impl->pause(id);
 }
 
 void
-DBusSource::resume(const Transfer::Id& id)
+DMSource::resume(const Transfer::Id& id)
 {
   impl->resume(id);
 }
 
 void
-DBusSource::cancel(const Transfer::Id& id)
+DMSource::cancel(const Transfer::Id& id)
 {
   impl->cancel(id);
 }
 
 void
-DBusSource::open_app(const Transfer::Id& id)
+DMSource::open_app(const Transfer::Id& id)
 {
   impl->open_app(id);
+}
+
+std::shared_ptr<MutableModel>
+DMSource::get_model()
+{
+  return impl->get_model();
 }
 
 /***
 ****
 ***/
-
 
 } // namespace transfer
 } // namespace indicator
