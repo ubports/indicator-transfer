@@ -19,6 +19,7 @@ Build-Depends: cmake,
                libgtest-dev,
                libdbustest1-dev,
                google-mock (>= 1.6.0+svn437),
+               valgrind [amd64 armhf i386 powerpc],
 # for packaging
                debhelper (>= 9), 
                dh-translations,
