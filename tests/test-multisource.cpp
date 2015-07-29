@@ -28,8 +28,10 @@ using ::testing::AtLeast;
 
 using namespace unity::indicator::transfer;
 
-namespace
+class MultiSourceFixture: public ::testing::Test
 {
+protected:
+
   struct Event
   {
     typedef enum { ADDED, CHANGED, REMOVED } Type;
@@ -37,9 +39,29 @@ namespace
     Transfer::Id id;
     bool operator==(const Event& that) const { return type==that.type && id==that.id; }
   };
-}
 
-TEST(Multisource,MultiplexesModels)
+  bool model_consists_of(const std::shared_ptr<Model>& model, std::initializer_list<std::shared_ptr<Transfer>> list) const
+  {
+    // test get_all()
+    std::vector<std::shared_ptr<Transfer>> transfers(list);
+    std::sort(transfers.begin(), transfers.end());
+    g_return_val_if_fail(transfers == model->get_all(), false);
+
+    // test get()
+    for(auto& transfer : transfers)
+      g_return_val_if_fail(transfer == model->get(transfer->id), false);
+
+    // test get_ids()
+    std::set<Transfer::Id> ids;
+    for(auto& transfer : transfers)
+      ids.insert(transfer->id);
+    g_return_val_if_fail(ids == model->get_ids(), false);
+
+    return true;
+  }
+};
+
+TEST_F(MultiSourceFixture,MultiplexesModels)
 {
   // set up the tributary sources, 'a' and 'b'
   auto a = std::make_shared<MockSource>();
@@ -66,9 +88,7 @@ TEST(Multisource,MultiplexesModels)
   // confirm that the multimodel sees the new transfer
   EXPECT_EQ(expected_events, events);
   EXPECT_EQ(at, a->get_model()->get(aid));
-  EXPECT_EQ(at, multimodel->get(aid));
-  EXPECT_EQ(std::set<Transfer::Id>{aid}, multimodel->get_ids());
-  EXPECT_EQ(std::vector<std::shared_ptr<Transfer>>({at}), multimodel->get_all());
+  EXPECT_TRUE(model_consists_of(multimodel, {at}));
 
   // add a transfer to the 'b' source...
   const Transfer::Id bid {"bid"};
@@ -80,35 +100,28 @@ TEST(Multisource,MultiplexesModels)
   // confirm that the multimodel sees the new transfer
   EXPECT_EQ(expected_events, events);
   EXPECT_EQ(bt, b->get_model()->get(bid));
-  EXPECT_EQ(bt, multimodel->get(bid));
-  EXPECT_EQ(std::set<Transfer::Id>({aid, bid}), multimodel->get_ids());
-  EXPECT_EQ(std::vector<std::shared_ptr<Transfer>>({at, bt}), multimodel->get_all());
+  EXPECT_TRUE(model_consists_of(multimodel, {at, bt}));
 
   // poke transfer 'at'...
   at->progress = 50.0;
   a->get_model()->emit_changed(aid);
   expected_events.push_back(Event{Event::CHANGED,aid});
   EXPECT_EQ(expected_events, events);
-  EXPECT_EQ(std::set<Transfer::Id>({aid, bid}), multimodel->get_ids());
-  EXPECT_EQ(std::vector<std::shared_ptr<Transfer>>({at, bt}), multimodel->get_all());
+  EXPECT_TRUE(model_consists_of(multimodel, {at, bt}));
 
   // remove transfer 'at'...
   a->get_model()->remove(aid);
   expected_events.push_back(Event{Event::REMOVED,aid});
   EXPECT_EQ(expected_events, events);
   EXPECT_FALSE(a->get_model()->get(aid));
-  EXPECT_FALSE(multimodel->get(aid));
-  EXPECT_EQ(std::set<Transfer::Id>{bid}, multimodel->get_ids());
-  EXPECT_EQ(std::vector<std::shared_ptr<Transfer>>({bt}), multimodel->get_all());
+  EXPECT_TRUE(model_consists_of(multimodel, {bt}));
 
   // remove transfer 'bt'...
   b->get_model()->remove(bid);
   expected_events.push_back(Event{Event::REMOVED,bid});
   EXPECT_EQ(expected_events, events);
   EXPECT_FALSE(b->get_model()->get(aid));
-  EXPECT_FALSE(multimodel->get(bid));
-  EXPECT_TRUE(multimodel->get_ids().empty());
-  EXPECT_TRUE(multimodel->get_all().empty());
+  EXPECT_TRUE(model_consists_of(multimodel, {}));
 }
 
 TEST(Multisource,MethodDelegation)
