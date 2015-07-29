@@ -40,8 +40,6 @@ public:
   {
   }
 
-  ~Impl() =default;
-
   std::shared_ptr<MutableModel> get_model()
   {
     return m_model;
@@ -51,17 +49,21 @@ public:
   {
     g_return_if_fail(source);
 
+    const auto idx = m_sources.size();
+    m_sources.push_back(source);
+
     auto model = source->get_model();
 
     m_connections.insert(
-      model->added().connect([this,source,model](const Transfer::Id& id){
-        m_id2source[id] = source;
-        m_model->add(model->get(id));
+      model->added().connect([this,idx](const Transfer::Id& id){
+        auto s = m_sources[idx];
+        m_id2source[id] = s;
+        m_model->add(s->get_model()->get(id));
       })
     );
 
     m_connections.insert(
-      model->removed().connect([this,source](const Transfer::Id& id){
+      model->removed().connect([this](const Transfer::Id& id){
         m_id2source.erase(id);
         m_model->remove(id);
       })
@@ -130,8 +132,9 @@ private:
   }
 
   std::shared_ptr<MutableModel> m_model;
-  std::set<core::ScopedConnection> m_connections;
+  std::vector<std::shared_ptr<Source>> m_sources;
   std::map<Transfer::Id,std::shared_ptr<Source>> m_id2source;
+  std::set<core::ScopedConnection> m_connections;
 };
 
 /***

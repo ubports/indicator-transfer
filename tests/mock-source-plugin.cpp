@@ -31,10 +31,10 @@ using namespace unity::indicator::transfer;
 
 extern "C"
 {
-G_MODULE_EXPORT std::shared_ptr<Source> get_source(const std::shared_ptr<MutableModel>&);
+G_MODULE_EXPORT Source* get_source();
 
-G_MODULE_EXPORT std::shared_ptr<Source> get_source(const std::shared_ptr<MutableModel>& /*model*/)
+G_MODULE_EXPORT Source* get_source()
 {
-  return std::make_shared<MockSource>();
+  return new MockSource{};
 }
 }

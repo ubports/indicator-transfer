@@ -20,7 +20,7 @@
 #ifndef INDICATOR_TRANSFER_SOURCE_PLUGIN_H
 #define INDICATOR_TRANSFER_SOURCE_PLUGIN_H
 
-#include <transfer/source.h>
+#include <transfer/multisource.h>
 
 #include <memory> // unique_ptr
 
@@ -29,20 +29,13 @@ namespace indicator {
 namespace transfer {
 
 /**
- * \brief a Source that gets its updates & events from plugins
+ * \brief a MultiSource that gets its sources from plugins
  */
-class PluginSource: public Source
+class PluginSource: public MultiSource
 {
 public:
-    explicit PluginSource(const std::shared_ptr<MutableModel>& model);
+    explicit PluginSource(const std::string& plugin_dir);
     ~PluginSource();
-
-    void open(const Transfer::Id& id);
-    void start(const Transfer::Id& id);
-    void pause(const Transfer::Id& id);
-    void resume(const Transfer::Id& id);
-    void cancel(const Transfer::Id& id);
-    void open_app(const Transfer::Id& id);
 
 private:
     class Impl;

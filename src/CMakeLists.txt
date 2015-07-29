@@ -7,6 +7,7 @@ add_definitions (-DG_LOG_DOMAIN="${CMAKE_PROJECT_NAME}")
 set (SERVICE_LIB_HANDWRITTEN_SOURCES
      controller.cpp
      model.cpp
+     plugin-source.cpp
      transfer.cpp
      view.cpp
      view-gmenu.cpp
@@ -33,7 +34,7 @@ install (TARGETS ${SERVICE_EXEC} RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_PKGLIB
 set_property (SOURCE ${SERVICE_LIB_HANDWRITTEN_SOURCES} ${SERVICE_EXEC_HANDWRITTEN_SOURCES}
               APPEND_STRING PROPERTY COMPILE_FLAGS " -std=c++11 -g ${CXX_WARNING_ARGS} ${GCOV_FLAGS}")
 
-set_property (SOURCE source-plugin.cpp
+set_property (SOURCE plugin-source.cpp
               APPEND PROPERTY COMPILE_DEFINITIONS PLUGINDIR="${CMAKE_INSTALL_FULL_PKGLIBEXECDIR}")
 
 
