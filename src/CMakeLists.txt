@@ -6,7 +6,6 @@ add_definitions (-DG_LOG_DOMAIN="${CMAKE_PROJECT_NAME}")
 # handwritten source code...
 set (SERVICE_LIB_HANDWRITTEN_SOURCES
      controller.cpp
-     dm-source.cpp
      model.cpp
      plugin-source.cpp
      transfer.cpp
@@ -15,7 +14,14 @@ set (SERVICE_LIB_HANDWRITTEN_SOURCES
      source.cpp
      multisource.cpp)
 
-add_library(${SERVICE_LIB} STATIC ${SERVICE_LIB_HANDWRITTEN_SOURCES})
+add_library(${SERVICE_LIB} SHARED ${SERVICE_LIB_HANDWRITTEN_SOURCES})
+
+set_target_properties(${SERVICE_LIB} PROPERTIES
+  VERSION ${INDICATOR_TRANSFER_VERSION}
+  SOVERSION ${INDICATOR_TRANSFER_VERSION_MAJOR}
+)
+install (TARGETS ${SERVICE_LIB} LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
+
 
 # add the bin dir to the include path so that
 # the compiler can find the generated header files
@@ -29,7 +35,7 @@ target_link_libraries (${SERVICE_EXEC} ${SERVICE_LIB} ${SERVICE_DEPS_LIBRARIES} 
 install (TARGETS ${SERVICE_EXEC} RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_PKGLIBEXECDIR})
 
 # the DownloadManager source plugin...
-set(DM_LIB "dmtransfers") 
+set(DM_LIB "dmtransfers")
 set(DM_SOURCES dm-source.cpp dm-plugin.cpp)
 add_library(${DM_LIB} MODULE ${DM_SOURCES})
 target_link_libraries (${DM_LIB} ${SERVICE_LIB} ${SERVICE_DEPS_LIBRARIES} ${GCOV_LIBS})
@@ -42,5 +48,3 @@ set_property (SOURCE ${SERVICE_LIB_HANDWRITTEN_SOURCES} ${SERVICE_EXEC_HANDWRITT
 
 set_property (SOURCE main.cpp APPEND PROPERTY COMPILE_DEFINITIONS PLUGINDIR="${CMAKE_INSTALL_FULL_PKGLIBEXECDIR}")
 #target_compile_definitions(${DM_LIB} PUBLIC -DPLUGINDIR=${CMAKE_INSTALL_FULL_PKGLIBEXECDIR})
-
-install (TARGETS ${SERVICE_EXEC} RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_PKGLIBEXECDIR})

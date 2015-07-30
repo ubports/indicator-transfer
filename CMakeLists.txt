@@ -14,7 +14,7 @@ option (enable_lcov "Generate lcov code coverage reports." ON)
 
 ##
 ##  GNU standard installation directories
-## 
+##
 
 include (GNUInstallDirs)
 if (EXISTS "/etc/debian_version") # Workaround for libexecdir on debian
@@ -23,6 +23,15 @@ if (EXISTS "/etc/debian_version") # Workaround for libexecdir on debian
 endif ()
 set (CMAKE_INSTALL_PKGLIBEXECDIR "${CMAKE_INSTALL_LIBEXECDIR}/${CMAKE_PROJECT_NAME}")
 set (CMAKE_INSTALL_FULL_PKGLIBEXECDIR "${CMAKE_INSTALL_FULL_LIBEXECDIR}/${CMAKE_PROJECT_NAME}")
+
+##
+## Version
+##
+
+set(INDICATOR_TRANSFER_VERSION_MAJOR 0)
+set(INDICATOR_TRANSFER_VERSION_MINOR 0)
+set(INDICATOR_TRANSFER_VERSION_PATCH 1)
+set(INDICATOR_TRANSFER_VERSION "${INDICATOR_TRANSFER_VERSION_MAJOR}.${INDICATOR_TRANSFER_VERSION_MINOR}.${INDICATOR_TRANSFER_VERSION_PATCH}")
 
 ##
 ##  Check for prerequisites
@@ -83,4 +92,11 @@ add_subdirectory(po)
 if (${enable_tests})
   add_subdirectory(tests)
 endif ()
+
+# uninstall target
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+               "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+               IMMEDIATE @ONLY)
+add_custom_target(uninstall "${CMAKE_COMMAND}"
+                  -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 

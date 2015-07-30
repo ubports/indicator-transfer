@@ -1,0 +1,3 @@
+usr/include/indicator-transfer/*
+usr/lib/*/libindicatortransferservice.so
+usr/lib/*/pkgconfig/indicator-transfer.pc

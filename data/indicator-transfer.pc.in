@@ -1,0 +1,9 @@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@/@CMAKE_PROJECT_NAME@
+
+Name: @CMAKE_PROJECT_NAME@
+Description: Developer files for @CMAKE_PROJECT_NAME@
+Version: @INDICATOR_TRANSFER_VERSION@
+Libs: -L${libdir} -lindicatortransferservice
+Cflags: -I${includedir}
+Requires: Qt5DBus
