@@ -25,12 +25,8 @@ using namespace unity::indicator::transfer;
 
 extern "C"
 {
-
-G_MODULE_EXPORT Source* get_source();
-
 G_MODULE_EXPORT Source* get_source()
 {
   return new unity::indicator::transfer::DMSource{};
 }
-
 }
