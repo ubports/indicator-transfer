@@ -42,11 +42,11 @@ struct Transfer
                  HASHING, PROCESSING, FINISHED,
                  ERROR } State;
   State state = QUEUED;
-  bool can_start() const;
-  bool can_resume() const;
-  bool can_pause() const;
-  bool can_cancel() const;
-  bool can_clear() const;
+  virtual bool can_start() const;
+  virtual bool can_resume() const;
+  virtual bool can_pause() const;
+  virtual bool can_cancel() const;
+  virtual bool can_clear() const;
 
   // -1 == unknown
   int seconds_left = -1;
