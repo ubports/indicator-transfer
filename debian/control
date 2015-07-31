@@ -19,7 +19,7 @@ Build-Depends: cmake,
                google-mock (>= 1.6.0+svn437),
                valgrind [amd64 armhf i386 powerpc],
 # for packaging
-               debhelper (>= 9), 
+               debhelper (>= 9),
                dh-translations,
 Standards-Version: 3.9.5
 Homepage: https://launchpad.net/indicator-transfer
@@ -32,10 +32,37 @@ X-Ubuntu-Use-Langpack: yes
 
 Package: indicator-transfer
 Architecture: any
-Depends: ${shlibs:Depends}, 
+Depends: ${shlibs:Depends},
          ${misc:Depends},
+         libindicator-transfer0 (= ${binary:Version}),
 Recommends: indicator-applet | indicator-renderer,
             content-hub,
             ubuntu-download-manager,
+            indicator-transfer-download-manager (>= ${binary:Version}),
 Description: Shows Transfers
+ Show file/data transfers in the indicator bar
+
+Package: indicator-transfer-download-manager
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         indicator-transfer (= ${binary:Version}),
+Description: Download manager plugin for trasfer indicator
+ Show file/data transfers in the indicator bar
+
+Package: libindicator-transfer0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+Description: Shared library used by transfer-indicator and plugins
+ Show file/data transfers in the indicator bar
+
+Package: libindicator-transfer-dev
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libindicator-transfer0 (= ${binary:Version}),
+Description: Development files for indicator-transfer
  Show file/data transfers in the indicator bar

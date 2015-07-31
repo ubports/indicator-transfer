@@ -1,2 +1,6 @@
+set (SERVICE_LIB_PUBLIC_HEADERS
+    model.h
+    source.h
+    transfer.h)
 
-
+install (FILES ${SERVICE_LIB_PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${CMAKE_PROJECT_NAME}/transfer)

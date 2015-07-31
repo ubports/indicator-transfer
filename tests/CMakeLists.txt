@@ -5,8 +5,8 @@ include_directories(${GMOCK_INCLUDE_DIRS})
 include_directories(${GTEST_INCLUDE_DIRS})
 
 # build libgtest
-#add_library (gtest STATIC 
-#             ${GTEST_SOURCE_DIR}/gtest-all.cc 
+#add_library (gtest STATIC
+#             ${GTEST_SOURCE_DIR}/gtest-all.cc
 #             ${GTEST_SOURCE_DIR}/gtest_main.cc)
 #set_target_properties (gtest PROPERTIES INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${GTEST_INCLUDE_DIR})
 #set_target_properties (gtest PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS} -w)
@@ -27,7 +27,7 @@ function(add_valgrind_test_by_name name)
   set (TEST_NAME ${name})
   add_executable (${TEST_NAME} ${TEST_NAME}.cpp)
   add_valgrind_test(${TEST_NAME} VALGRIND ./${TEST_NAME})
-  target_link_libraries (${TEST_NAME} indicatortransferservice ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
+  target_link_libraries (${TEST_NAME} indicator-transfer ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 endfunction()
 add_valgrind_test_by_name(test-controller)
 add_valgrind_test_by_name(test-multisource)
@@ -38,7 +38,7 @@ function(add_test_by_name name)
   set (TEST_NAME ${name})
   add_executable (${TEST_NAME} ${TEST_NAME}.cpp)
   add_test (${TEST_NAME} ${TEST_NAME})
-  target_link_libraries (${TEST_NAME} indicatortransferservice ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
+  target_link_libraries (${TEST_NAME} indicator-transfer ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 endfunction()
 add_test_by_name(test-view-gmenu)
 

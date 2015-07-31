@@ -1,0 +1,5 @@
+usr/share/upstart/sessions/indicator-transfer.conf
+etc/xdg/autostart/indicator-transfer.desktop
+usr/share/upstart/xdg/autostart/indicator-transfer.desktop
+usr/share/unity/indicators/com.canonical.indicator.transfer
+usr/lib/*/indicator-transfer/indicator-transfer-service
