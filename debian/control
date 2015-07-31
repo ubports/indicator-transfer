@@ -38,7 +38,7 @@ Depends: ${shlibs:Depends},
 Recommends: indicator-applet | indicator-renderer,
             content-hub,
             ubuntu-download-manager,
-            indicator-transfer-donwload-manager (>= ${binary:Version}),
+            indicator-transfer-download-manager (>= ${binary:Version}),
 Description: Shows Transfers
  Show file/data transfers in the indicator bar
 
@@ -47,10 +47,11 @@ Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          indicator-transfer (= ${binary:Version}),
-Description: Donwload manager plugin for trasfer indicator
+Description: Download manager plugin for trasfer indicator
  Show file/data transfers in the indicator bar
 
 Package: libindicator-transfer0
+Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
@@ -58,6 +59,7 @@ Description: Shared library used by transfer-indicator and plugins
  Show file/data transfers in the indicator bar
 
 Package: libindicator-transfer-dev
+Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
