@@ -4,13 +4,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${GMOCK_INCLUDE_DIRS})
 include_directories(${GTEST_INCLUDE_DIRS})
 
-# build libgtest
-#add_library (gtest STATIC
-#             ${GTEST_SOURCE_DIR}/gtest-all.cc
-#             ${GTEST_SOURCE_DIR}/gtest_main.cc)
-#set_target_properties (gtest PROPERTIES INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${GTEST_INCLUDE_DIR})
-#set_target_properties (gtest PROPERTIES COMPILE_FLAGS ${COMPILE_FLAGS} -w)
-
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   # turn off the warnings that break Google Test
   set (CXX_WARNING_ARGS "${CXX_WARNING_ARGS} -Wno-global-constructors -Wno-weak-vtables -Wno-undef -Wno-c++98-compat-pedantic -Wno-missing-noreturn -Wno-used-but-marked-unused -Wno-padded -Wno-deprecated -Wno-sign-compare -Wno-shift-sign-overflow")
