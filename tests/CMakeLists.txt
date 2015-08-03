@@ -9,7 +9,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set (CXX_WARNING_ARGS "${CXX_WARNING_ARGS} -Wno-global-constructors -Wno-weak-vtables -Wno-undef -Wno-c++98-compat-pedantic -Wno-missing-noreturn -Wno-used-but-marked-unused -Wno-padded -Wno-deprecated -Wno-sign-compare -Wno-shift-sign-overflow")
 endif()
 
-SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g ${CXX_WARNING_ARGS}")
+add_definitions(-fPIC)
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -g ${CXX_WARNING_ARGS}")
 
 # look for headers in our src dir, and also in the directories where we autogenerate files...
 include_directories (${CMAKE_SOURCE_DIR}/src)
@@ -26,8 +27,8 @@ add_valgrind_test_by_name(test-controller)
 add_valgrind_test_by_name(test-multisource)
 add_valgrind_test_by_name(test-plugin-source)
 set(PLUGIN_NAME "mock-source-plugin")
-add_library(${PLUGIN_NAME} MODULE mock-source-plugin.cpp)
-target_link_libraries(${PLUGIN_NAME} PRIVATE ${SERVICE_DEPS_LIBRARIES})
+add_library(${PLUGIN_NAME} STATIC mock-source-plugin.cpp)
+target_link_libraries(${PLUGIN_NAME} PRIVATE ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 
 function(add_test_by_name name)
   set (TEST_NAME ${name})
