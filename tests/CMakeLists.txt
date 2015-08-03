@@ -27,7 +27,7 @@ add_valgrind_test_by_name(test-multisource)
 add_valgrind_test_by_name(test-plugin-source)
 set(PLUGIN_NAME "mock-source-plugin")
 add_library(${PLUGIN_NAME} MODULE mock-source-plugin.cpp)
-target_link_libraries(${PLUGIN_NAME} PRIVATE ${SERVICE_DEPS_LIBRARIES} ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
+target_link_libraries(${PLUGIN_NAME} PRIVATE ${SERVICE_DEPS_LIBRARIES})
 
 function(add_test_by_name name)
   set (TEST_NAME ${name})
