@@ -53,7 +53,7 @@ public:
     virtual void clear(const Transfer::Id& id) =0;
     virtual void open_app(const Transfer::Id& id) =0;
 
-    virtual std::shared_ptr<MutableModel> get_model() =0;
+    virtual const std::shared_ptr<const MutableModel> get_model() =0;
 };
 
 } // namespace transfer

@@ -940,10 +940,10 @@ DMSource::clear(const Transfer::Id& id)
 void
 DMSource::open_app(const Transfer::Id& id)
 {
-  impl->open_app(id);
+    impl->open_app(id);
 }
 
-std::shared_ptr<MutableModel>
+const std::shared_ptr<const MutableModel>
 DMSource::get_model()
 {
   return impl->get_model();

@@ -184,7 +184,7 @@ MultiSource::resume(const Transfer::Id& id)
 void
 MultiSource::cancel(const Transfer::Id& id)
 {
-    impl->cancel(id);
+  impl->cancel(id);
 }
 
 void MultiSource::clear(const Transfer::Id &id)
@@ -198,7 +198,7 @@ MultiSource::open_app(const Transfer::Id& id)
   impl->open_app(id);
 }
 
-std::shared_ptr<MutableModel>
+const std::shared_ptr<const MutableModel>
 MultiSource::get_model()
 {
   return impl->get_model();

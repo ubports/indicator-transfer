@@ -32,7 +32,7 @@ namespace transfer {
 class GMenuView
 {
 public:
-  GMenuView(const std::shared_ptr<Model>& model,
+  GMenuView(const std::shared_ptr<const Model>& model,
             const std::shared_ptr<Controller>& controller);
   ~GMenuView();
   void set_controller(const std::shared_ptr<Controller>&);

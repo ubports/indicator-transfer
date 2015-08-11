@@ -99,7 +99,7 @@ TEST_F(ControllerFixture, ClearAll)
       auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
-      m_source->add_transfer(t);
+      m_source->m_model->add(t);
     }
 
   // make sure all the transfers made it into the model
@@ -149,7 +149,7 @@ TEST_F(ControllerFixture, PauseAll)
       auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
-      m_source->add_transfer(t);
+      m_source->m_model->add(t);
       EXPECT_EQ(transfer.can_pause, t->can_pause());
       EXPECT_CALL(*m_source, pause(transfer.id)).Times(transfer.can_pause?1:0);
     }
@@ -182,7 +182,7 @@ TEST_F(ControllerFixture, ResumeAll)
       auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
-      m_source->add_transfer(t);
+      m_source->m_model->add(t);
       EXPECT_EQ(transfer.can_resume, t->can_resume());
       EXPECT_CALL(*m_source, resume(transfer.id)).Times(transfer.can_resume?1:0);
     }
@@ -200,7 +200,7 @@ TEST_F(ControllerFixture, Tap)
   auto t = std::make_shared<Transfer>();
   t->state = Transfer::QUEUED;
   t->id = id;
-  m_source->add_transfer(t);
+  m_source->m_model->add(t);
 
   t->state = Transfer::QUEUED;
   EXPECT_CALL(*m_source, start(id)).Times(1);
@@ -273,7 +273,7 @@ TEST_F(ControllerFixture, Start)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_source->add_transfer(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {
@@ -293,7 +293,7 @@ TEST_F(ControllerFixture, Pause)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_source->add_transfer(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {
@@ -313,7 +313,7 @@ TEST_F(ControllerFixture, Resume)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_source->add_transfer(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {
@@ -333,7 +333,7 @@ TEST_F(ControllerFixture, Cancel)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_source->add_transfer(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {

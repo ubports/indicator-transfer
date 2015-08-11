@@ -57,15 +57,15 @@ protected:
     t.reset(new Transfer);
     t->id = "a";
     t->state = Transfer::RUNNING;
-    m_source->add_transfer(t);
+    m_source->m_model->add(t);
     t.reset(new Transfer);
     t->id = "b";
     t->state = Transfer::PAUSED;
-    m_source->add_transfer(t);
+    m_source->m_model->add(t);
     t.reset(new Transfer);
     t->id = "c";
     t->state = Transfer::FINISHED;
-    m_source->add_transfer(t);
+    m_source->m_model->add(t);
     m_controller.reset(new MockController(m_source));
     m_view.reset(new GMenuView(m_source->get_model(), m_controller));
   }
@@ -352,7 +352,7 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   for (auto& transfer : m_source->get_model()->get_all())
     {
       transfer->state = Transfer::FINISHED;
-      m_source->get_model()->emit_changed(transfer->id);
+      m_source->m_model->emit_changed(transfer->id);
     }
 
   wait_msec(200);
@@ -363,7 +363,7 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   // Confirm that the header is visible.
   auto transfer = m_source->get_model()->get("a");
   transfer->state = Transfer::RUNNING;
-  m_source->get_model()->emit_changed(transfer->id);
+  m_source->m_model->emit_changed(transfer->id);
   wait_msec(200);
   EXPECT_TRUE(is_header_visible(action_group, action_name));
 
@@ -372,7 +372,7 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   // Confirm that the header is visible.
   transfer = m_source->get_model()->get("a");
   transfer->state = Transfer::PAUSED;
-  m_source->get_model()->emit_changed(transfer->id);
+  m_source->m_model->emit_changed(transfer->id);
   wait_msec(200);
   EXPECT_TRUE(is_header_visible(action_group, action_name));
 
@@ -380,7 +380,7 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   // Remove all the transfers from the menu.
   // Confirm that the header is not visible.
   for (const auto& id : m_source->get_model()->get_ids())
-    m_source->remove_transfer(id);
+    m_source->m_model->remove(id);
   wait_msec(200);
   EXPECT_FALSE(is_header_visible(action_group, action_name));
 

@@ -43,7 +43,7 @@ class GActions
 {
 public:
 
-  GActions(const std::shared_ptr<Model>& model,
+  GActions(const std::shared_ptr<const Model>& model,
            const std::shared_ptr<Controller>& controller):
     m_action_group(g_simple_action_group_new()),
     m_controller(controller)
@@ -75,7 +75,7 @@ public:
 
   }
 
-  void set_model(const std::shared_ptr<Model>& model)
+  void set_model(const std::shared_ptr<const Model>& model)
   {
     // out with the old...
     auto& c = m_connections;
@@ -252,7 +252,7 @@ private:
   }
 
   GSimpleActionGroup* m_action_group = nullptr;
-  std::shared_ptr<Model> m_model;
+  std::shared_ptr<const Model> m_model;
   std::shared_ptr<Controller> m_controller;
   std::set<core::ScopedConnection> m_connections;
 
@@ -279,7 +279,7 @@ public:
   GMenuModel* menu_model() { return G_MENU_MODEL(m_menu); }
 
   Menu(const char* name_in,
-       const std::shared_ptr<Model>& model,
+       const std::shared_ptr<const Model>& model,
        const std::shared_ptr<GActions>& gactions):
     m_name{name_in},
     m_gactions{gactions}
@@ -296,7 +296,7 @@ public:
     g_clear_object(&m_menu);
   }
 
-  void set_model (const std::shared_ptr<Model>& model)
+  void set_model (const std::shared_ptr<const Model>& model)
   {
     auto& c = m_connections;
     c.clear();
@@ -563,7 +563,7 @@ private:
     return item;
   }
 
-  static bool bulk_menu_item_is_equal(GMenuModel* model, 
+  static bool bulk_menu_item_is_equal(GMenuModel* model,
                                       int pos,
                                       GMenuItem* item)
   {
@@ -772,7 +772,7 @@ private:
   GMenu* m_menu = nullptr;
   const char* const m_name;
 
-  std::shared_ptr<Model> m_model;
+  std::shared_ptr<const Model> m_model;
   std::shared_ptr<GActions> m_gactions;
   std::map<Transfer::Id,Section> m_visible_transfers;
   GMenu* m_submenu = nullptr;
@@ -936,7 +936,7 @@ class GMenuView::Impl
 {
 public:
 
-  Impl (const std::shared_ptr<Model>& model,
+  Impl (const std::shared_ptr<const Model>& model,
         const std::shared_ptr<Controller>& controller):
     m_model(model),
     m_controller(controller),
@@ -946,7 +946,7 @@ public:
     // create the Menus
     for(int i=0; i<Menu::NUM_PROFILES; i++)
       m_menus.push_back(create_menu_for_profile(Menu::Profile(i)));
-  
+
     m_exporter->publish(m_gactions, m_menus);
   }
 
@@ -976,7 +976,7 @@ private:
     return m;
   }
 
-  std::shared_ptr<Model> m_model;
+  std::shared_ptr<const Model> m_model;
   std::shared_ptr<Controller> m_controller;
   std::shared_ptr<GActions> m_gactions;
   std::vector<std::shared_ptr<Menu>> m_menus;
@@ -987,8 +987,8 @@ private:
 ****
 ***/
 
-GMenuView::GMenuView(const std::shared_ptr<Model>& model,
-                 const std::shared_ptr<Controller>& controller):
+GMenuView::GMenuView(const std::shared_ptr<const Model> &model,
+                     const std::shared_ptr<Controller>& controller):
   p(new Impl(model, controller))
 {
 }

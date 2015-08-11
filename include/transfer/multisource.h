@@ -43,7 +43,7 @@ public:
     void cancel(const Transfer::Id& id) override;
     void clear(const Transfer::Id& id) override;
     void open_app(const Transfer::Id& id) override;
-    std::shared_ptr<MutableModel> get_model() override;
+    const std::shared_ptr<const MutableModel> get_model() override;
 
     void add_source(const std::shared_ptr<Source>& source);
 
