@@ -36,7 +36,7 @@ namespace transfer {
 class Controller
 {
 public:
-    Controller(const std::shared_ptr<Source>& source);
+    explicit Controller(const std::shared_ptr<Source>& source);
     virtual ~Controller();
 
     virtual void pause_all();
