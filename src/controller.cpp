@@ -27,9 +27,7 @@ namespace transfer {
 ****
 ***/
 
-Controller::Controller(const std::shared_ptr<MutableModel>& model,
-                       const std::shared_ptr<Source>& source):
-  m_model(model),
+Controller::Controller(const std::shared_ptr<Source>& source):
   m_source(source)
 {
 }
@@ -40,26 +38,25 @@ Controller::~Controller()
 
 void Controller::pause_all()
 {
-  for(const auto& id : m_model->get_ids())
+  for(const auto& id : get_ids())
     pause(id);
 }
 
 void Controller::resume_all()
 {
-  for(const auto& id : m_model->get_ids())
+  for(const auto& id : get_ids())
     resume(id);
 }
 
 void Controller::clear_all()
 {
-  for (const auto& transfer : m_model->get_all())
-    if (transfer->can_clear())
-      m_model->remove(transfer->id);
+  for (const auto& id : get_ids())
+    clear(id);
 }
 
 void Controller::tap(const Transfer::Id& id)
 {
-  const auto transfer = m_model->get(id);
+  const auto transfer = get(id);
   g_return_if_fail (transfer);
 
   if (transfer->can_start())
@@ -75,28 +72,35 @@ void Controller::tap(const Transfer::Id& id)
 
 void Controller::pause(const Transfer::Id& id)
 {
-  const auto& transfer = m_model->get(id);
+  const auto& transfer = get(id);
   if (transfer && transfer->can_pause())
     m_source->pause(id);
 }
 
 void Controller::cancel(const Transfer::Id& id)
 {
-  const auto& transfer = m_model->get(id);
+  const auto& transfer = get(id);
   if (transfer && transfer->can_cancel())
     m_source->cancel(id);
 }
 
+void Controller::clear(const Transfer::Id& id)
+{
+  const auto& transfer = get(id);
+  if (transfer && transfer->can_clear())
+    m_source->clear(id);
+}
+
 void Controller::resume(const Transfer::Id& id)
 {
-  const auto& transfer = m_model->get(id);
+  const auto& transfer = get(id);
   if (transfer && transfer->can_resume())
     m_source->resume(id);
 }
 
 void Controller::start(const Transfer::Id& id)
 {
-  const auto& transfer = m_model->get(id);
+  const auto& transfer = get(id);
   if (transfer && transfer->can_start())
     m_source->start(id);
 }
@@ -108,7 +112,27 @@ void Controller::open(const Transfer::Id& id)
 
 void Controller::open_app(const Transfer::Id& id)
 {
-  m_source->open_app(id);
+    m_source->open_app(id);
+}
+
+int Controller::size() const
+{
+    return m_source->get_model()->size();
+}
+
+int Controller::count(const Transfer::Id& id) const
+{
+    return m_source->get_model()->count(id);
+}
+
+std::set<Transfer::Id> Controller::get_ids() const
+{
+    return m_source->get_model()->get_ids();
+}
+
+std::shared_ptr<Transfer> Controller::get(const Transfer::Id& id) const
+{
+    return m_source->get_model()->get(id);
 }
 
 /***

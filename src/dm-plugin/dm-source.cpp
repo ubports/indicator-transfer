@@ -43,7 +43,7 @@ static constexpr char const * CH_TRANSFER_IFACE_NAME {"com.ubuntu.content.dbus.T
 
 /**
  * A Transfer whose state comes from content-hub and ubuntu-download-manager.
- * 
+ *
  * Each DMTransfer tracks a com.canonical.applications.Download (ccad) object
  * from ubuntu-download-manager. The ccad is used for pause/resume/cancel,
  * state change / download progress signals, etc.
@@ -85,14 +85,14 @@ public:
   void start()
   {
     g_return_if_fail(can_start());
-    
+
     call_ccad_method_no_args_no_response("start");
   }
 
   void pause()
   {
     g_return_if_fail(can_pause());
-    
+
     call_ccad_method_no_args_no_response("pause");
   }
 
@@ -359,7 +359,7 @@ private:
             speed_Bps = 0;
             m_history.clear();
           }
- 
+
         emit_changed_soon();
       }
   }
@@ -675,6 +675,11 @@ public:
     transfer->cancel();
   }
 
+  void clear(const Transfer::Id& id)
+  {
+    m_model->remove(id);
+  }
+
   void open(const Transfer::Id& id)
   {
     auto transfer = find_transfer_by_id(id);
@@ -812,7 +817,7 @@ private:
     g_debug("download signal: %s %s %s", ccad_path, signal_name, variant_str);
     g_free(variant_str);
 
-    // Route this signal to the DMTransfer for processing 
+    // Route this signal to the DMTransfer for processing
     auto self = static_cast<Impl*>(gself);
     auto transfer = self->find_transfer_by_ccad_path(ccad_path);
     if (transfer)
@@ -924,6 +929,12 @@ void
 DMSource::cancel(const Transfer::Id& id)
 {
   impl->cancel(id);
+}
+
+void
+DMSource::clear(const Transfer::Id& id)
+{
+  impl->clear(id);
 }
 
 void

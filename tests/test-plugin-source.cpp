@@ -34,7 +34,6 @@ protected:
 
   GTestDBus* bus = nullptr;
 
-  std::shared_ptr<MutableModel> m_model;
   std::shared_ptr<Source> m_source;
   std::shared_ptr<Controller> m_controller;
 
@@ -44,15 +43,13 @@ protected:
 
     auto plugin_dir = g_get_current_dir();
     m_source.reset(new PluginSource(plugin_dir));
-    m_model = m_source->get_model();
-    m_controller.reset(new Controller(m_model, m_source));
+    m_controller.reset(new Controller(m_source));
     g_clear_pointer(&plugin_dir, g_free);
   }
 
   void TearDown()
   {
     m_controller.reset();
-    m_model.reset();
     m_source.reset();
 
     super::TearDown();

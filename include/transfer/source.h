@@ -50,6 +50,7 @@ public:
     virtual void pause(const Transfer::Id& id) =0;
     virtual void resume(const Transfer::Id& id) =0;
     virtual void cancel(const Transfer::Id& id) =0;
+    virtual void clear(const Transfer::Id& id) =0;
     virtual void open_app(const Transfer::Id& id) =0;
 
     virtual std::shared_ptr<MutableModel> get_model() =0;

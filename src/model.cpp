@@ -58,6 +58,16 @@ std::shared_ptr<Transfer> Model::get(const Transfer::Id& id) const
   return ret;
 }
 
+int Model::size() const
+{
+    return m_transfers.size();
+}
+
+int Model::count(const Transfer::Id& id) const
+{
+    return m_transfers.count(id);
+}
+
 const core::Signal<Transfer::Id>& Model::changed() const
 {
   return m_changed;

@@ -37,7 +37,6 @@ protected:
 
   GTestDBus* bus = nullptr;
   std::shared_ptr<MockSource> m_source;
-  std::shared_ptr<MutableModel> m_model;
   std::shared_ptr<MockController> m_controller;
   std::shared_ptr<GMenuView> m_view;
 
@@ -54,22 +53,21 @@ protected:
 
     // bring up the source
     m_source.reset(new MockSource);
-    m_model.reset(new MutableModel);
     std::shared_ptr<Transfer> t;
     t.reset(new Transfer);
     t->id = "a";
     t->state = Transfer::RUNNING;
-    m_model->add(t);
+    m_source->add_transfer(t);
     t.reset(new Transfer);
     t->id = "b";
     t->state = Transfer::PAUSED;
-    m_model->add(t);
+    m_source->add_transfer(t);
     t.reset(new Transfer);
     t->id = "c";
     t->state = Transfer::FINISHED;
-    m_model->add(t);
-    m_controller.reset(new MockController(m_model, m_source));
-    m_view.reset(new GMenuView(m_model, m_controller));
+    m_source->add_transfer(t);
+    m_controller.reset(new MockController(m_source));
+    m_view.reset(new GMenuView(m_source->get_model(), m_controller));
   }
 
   void TearDown()
@@ -77,7 +75,6 @@ protected:
     // empty the source
     m_view.reset();
     m_controller.reset();
-    m_model.reset();
     m_source.reset();
 
     // bring down the bus
@@ -147,9 +144,9 @@ TEST_F(GMenuViewFixture, ExportedActions)
     "resume-all",
     "resume-transfer"
   };
-  for (const auto& id : m_model->get_ids())
+  for (const auto& id : m_source->get_model()->get_ids())
     expected_actions.insert("transfer-state." + id);
- 
+
   auto connection = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, nullptr);
   auto exported = g_dbus_action_group_get(connection, BUS_NAME, BUS_PATH);
   auto names_strv = g_action_group_list_actions(G_ACTION_GROUP(exported));
@@ -205,14 +202,14 @@ TEST_F(GMenuViewFixture, InvokedGActionsCallTheController)
 
   // try tapping a transfer that can be resumed
   const char* id = "b";
-  EXPECT_TRUE(m_model->get(id)->can_resume());
+  EXPECT_TRUE(m_source->get_model()->get(id)->can_resume());
   EXPECT_CALL(*m_controller, tap(id)).Times(1);
   g_action_group_activate_action(action_group, "activate-transfer", g_variant_new_string(id));
   wait_msec();
 
   // try tapping a transfer that CAN'T be resumed
   id = "c";
-  EXPECT_TRUE(!m_model->get(id)->can_resume());
+  EXPECT_TRUE(!m_source->get_model()->get(id)->can_resume());
   EXPECT_CALL(*m_controller, tap(id)).Times(1);
   g_action_group_activate_action(action_group, "activate-transfer", g_variant_new_string(id));
   wait_msec();
@@ -270,7 +267,7 @@ TEST_F(GMenuViewFixture, InvokedGActionsCallTheController)
 /***
 ****
 ****   Header
-**** 
+****
 ***/
 
 namespace
@@ -352,10 +349,10 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   // Visibility test #1:
   // Change the model to all transfers finished.
   // Confirm that the header is not visible.
-  for (auto& transfer : m_model->get_all())
+  for (auto& transfer : m_source->get_model()->get_all())
     {
       transfer->state = Transfer::FINISHED;
-      m_model->emit_changed(transfer->id);
+      m_source->get_model()->emit_changed(transfer->id);
     }
 
   wait_msec(200);
@@ -364,26 +361,26 @@ TEST_F(GMenuViewFixture, PhoneHeader)
   // Visibility test #2:
   // Change the model to all transfers finished except one running.
   // Confirm that the header is visible.
-  auto transfer = m_model->get("a");
+  auto transfer = m_source->get_model()->get("a");
   transfer->state = Transfer::RUNNING;
-  m_model->emit_changed(transfer->id);
+  m_source->get_model()->emit_changed(transfer->id);
   wait_msec(200);
   EXPECT_TRUE(is_header_visible(action_group, action_name));
 
   // Visibility test #3:
   // Change the model to all transfers finished except one paused.
   // Confirm that the header is visible.
-  transfer = m_model->get("a");
+  transfer = m_source->get_model()->get("a");
   transfer->state = Transfer::PAUSED;
-  m_model->emit_changed(transfer->id);
+  m_source->get_model()->emit_changed(transfer->id);
   wait_msec(200);
   EXPECT_TRUE(is_header_visible(action_group, action_name));
 
   // Visibility test #4:
   // Remove all the transfers from the menu.
   // Confirm that the header is not visible.
-  for (const auto& id : m_model->get_ids())
-    m_model->remove(id);
+  for (const auto& id : m_source->get_model()->get_ids())
+    m_source->remove_transfer(id);
   wait_msec(200);
   EXPECT_FALSE(is_header_visible(action_group, action_name));
 
