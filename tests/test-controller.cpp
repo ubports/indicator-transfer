@@ -114,10 +114,16 @@ TEST_F(ControllerFixture, ClearAll)
   // call clear-all
   m_controller->clear_all();
 
-  // make sure all the clearable transfers are gone
+  // make sure all the clearable transfers are gone from controler and source
   ids = m_model->get_ids();
+  auto source_ids = m_source->get_model()->get_ids();
+
   for (const auto& transfer : transfers)
-    EXPECT_EQ((transfer.can_clear ? 0 : 1), ids.count(transfer.id));
+    {
+      int should_clear = (transfer.can_clear ? 0 : 1);
+      EXPECT_EQ(should_clear, ids.count(transfer.id));
+      EXPECT_EQ(should_clear, source_ids.count(transfer.id));
+    }
 }
 
 /**
