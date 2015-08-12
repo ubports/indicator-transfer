@@ -43,12 +43,11 @@ class GActions
 {
 public:
 
-  GActions(const std::shared_ptr<const Model>& model,
-           const std::shared_ptr<Controller>& controller):
+  GActions(const std::shared_ptr<Controller>& controller):
     m_action_group(g_simple_action_group_new()),
     m_controller(controller)
   {
-    set_model(model);
+    set_model(controller->get_model());
 
     const GActionEntry entries[] = {
         { "activate-transfer", on_tap, "s", nullptr },
@@ -936,13 +935,12 @@ class GMenuView::Impl
 {
 public:
 
-  Impl (const std::shared_ptr<const Model>& model,
-        const std::shared_ptr<Controller>& controller):
-    m_model(model),
+  Impl (const std::shared_ptr<Controller>& controller):
     m_controller(controller),
-    m_gactions(new GActions(model, controller)),
+    m_gactions(new GActions(controller)),
     m_exporter(new Exporter)
   {
+    set_model(controller->get_model());
     // create the Menus
     for(int i=0; i<Menu::NUM_PROFILES; i++)
       m_menus.push_back(create_menu_for_profile(Menu::Profile(i)));
@@ -954,7 +952,7 @@ public:
   {
   }
 
-  void set_model(const std::shared_ptr<Model>& model)
+  void set_model(const std::shared_ptr<const Model>& model)
   {
     m_model = model;
 
@@ -987,19 +985,13 @@ private:
 ****
 ***/
 
-GMenuView::GMenuView(const std::shared_ptr<const Model> &model,
-                     const std::shared_ptr<Controller>& controller):
-  p(new Impl(model, controller))
+GMenuView::GMenuView(const std::shared_ptr<Controller>& controller):
+  p(new Impl(controller))
 {
 }
 
 GMenuView::~GMenuView()
 {
-}
-
-void GMenuView::set_model(const std::shared_ptr<Model>& model)
-{
-  p->set_model(model);
 }
 
 const core::Signal<>& GMenuView::name_lost() const

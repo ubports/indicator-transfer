@@ -46,7 +46,7 @@ main(int /*argc*/, char** /*argv*/)
     // run until we lose the busname
     auto source = std::make_shared<PluginSource>(PLUGINDIR);
     auto controller = std::make_shared<Controller>(source);
-    GMenuView menu_view (source->get_model(), controller);
+    GMenuView menu_view (controller);
     // FIXME: listen for busname-lost
     g_main_loop_run(loop);
 

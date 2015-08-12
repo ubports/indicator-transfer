@@ -53,6 +53,7 @@ public:
 
     int size() const;
     int count(const Transfer::Id&) const;
+    const std::shared_ptr<const MutableModel> get_model();
 
 private:
     std::shared_ptr<Source> m_source;

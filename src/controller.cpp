@@ -125,6 +125,11 @@ int Controller::count(const Transfer::Id& id) const
     return m_source->get_model()->count(id);
 }
 
+const std::shared_ptr<const MutableModel> Controller::get_model()
+{
+    return m_source->get_model();
+}
+
 std::set<Transfer::Id> Controller::get_ids() const
 {
     return m_source->get_model()->get_ids();
