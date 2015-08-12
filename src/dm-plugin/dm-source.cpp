@@ -631,12 +631,6 @@ public:
     m_model(std::make_shared<MutableModel>())
   {
     g_bus_get(G_BUS_TYPE_SESSION, m_cancellable, on_bus_ready, this);
-
-    m_model->removed().connect([this](const Transfer::Id& id){
-      auto transfer = find_transfer_by_id(id);
-      if (transfer)
-        m_removed_ccad.insert(transfer->ccad_path());
-    });
   }
 
   ~Impl()
@@ -677,7 +671,12 @@ public:
 
   void clear(const Transfer::Id& id)
   {
-    m_model->remove(id);
+    auto transfer = find_transfer_by_id(id);
+    if (transfer)
+      {
+        m_removed_ccad.insert(transfer->ccad_path());
+        m_model->remove(id);
+      }
   }
 
   void open(const Transfer::Id& id)

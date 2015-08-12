@@ -67,7 +67,7 @@ protected:
     t->state = Transfer::FINISHED;
     m_source->m_model->add(t);
     m_controller.reset(new MockController(m_source));
-    m_view.reset(new GMenuView(m_source->get_model(), m_controller));
+    m_view.reset(new GMenuView(m_controller));
   }
 
   void TearDown()
