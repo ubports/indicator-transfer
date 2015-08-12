@@ -43,7 +43,7 @@ class GActions
 {
 public:
 
-  GActions(const std::shared_ptr<Controller>& controller):
+  explicit GActions(const std::shared_ptr<Controller>& controller):
     m_action_group(g_simple_action_group_new()),
     m_controller(controller)
   {
@@ -935,7 +935,7 @@ class GMenuView::Impl
 {
 public:
 
-  Impl (const std::shared_ptr<Controller>& controller):
+  explicit Impl (const std::shared_ptr<Controller>& controller):
     m_controller(controller),
     m_gactions(new GActions(controller)),
     m_exporter(new Exporter)
