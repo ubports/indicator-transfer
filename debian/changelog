@@ -1,8 +1,17 @@
-indicator-transfer (0.2-0buntu1) UNRELEASED; urgency=medium
+indicator-transfer (0.2+15.10.20150819-0ubuntu1) wily; urgency=medium
 
+  [ Renato Araujo Oliveira Filho ]
   * Update version to 0.2
 
- -- Renato Araujo Oliveira Filho <renato.filho@canonical.com>  Wed, 19 Aug 2015 14:52:32 -0300
+  [ Charles Kerr ]
+  * Add a plugin architecture so that Transfer objects can be added from
+    multiple sources, rather than just from DownloadManager.
+
+  [ Renato Filho ]
+  * Add a plugin architecture so that Transfer objects can be added from
+    multiple sources, rather than just from DownloadManager.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Wed, 19 Aug 2015 19:17:09 +0000
 
 indicator-transfer (0.1+15.10.20150727-0ubuntu2~gcc5.1) wily; urgency=medium
 
