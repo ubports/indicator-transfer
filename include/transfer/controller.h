@@ -36,8 +36,7 @@ namespace transfer {
 class Controller
 {
 public:
-    Controller(const std::shared_ptr<MutableModel>& model,
-               const std::shared_ptr<Source>& source);
+    explicit Controller(const std::shared_ptr<Source>& source);
     virtual ~Controller();
 
     virtual void pause_all();
@@ -48,12 +47,19 @@ public:
     virtual void pause(const Transfer::Id&);
     virtual void cancel(const Transfer::Id&);
     virtual void resume(const Transfer::Id&);
+    virtual void clear(const Transfer::Id&);
     virtual void open(const Transfer::Id&);
     virtual void open_app(const Transfer::Id&);
 
+    int size() const;
+    int count(const Transfer::Id&) const;
+    const std::shared_ptr<const MutableModel> get_model();
+
 private:
-    std::shared_ptr<MutableModel> m_model;
     std::shared_ptr<Source> m_source;
+
+    std::set<Transfer::Id> get_ids() const;
+    std::shared_ptr<Transfer> get(const Transfer::Id& id) const;
 };
 
 } // namespace transfer

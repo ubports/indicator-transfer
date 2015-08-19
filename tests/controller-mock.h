@@ -31,9 +31,8 @@ namespace transfer {
 class MockController: public Controller
 {
 public:
-  MockController(const std::shared_ptr<MutableModel>& model, 
-                 const std::shared_ptr<Source>& source):
-    Controller(model, source) {}
+  explicit MockController(const std::shared_ptr<Source>& source):
+    Controller(source) {}
 
   MOCK_METHOD0(pause_all, void());
   MOCK_METHOD0(resume_all, void());

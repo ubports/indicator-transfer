@@ -42,6 +42,8 @@ public:
     std::set<Transfer::Id> get_ids() const;
     std::vector<std::shared_ptr<Transfer>> get_all() const;
     std::shared_ptr<Transfer> get(const Transfer::Id&) const;
+    int size() const;
+    int count(const Transfer::Id&) const;
 
     const core::Signal<Transfer::Id>& changed() const;
     const core::Signal<Transfer::Id>& added() const;

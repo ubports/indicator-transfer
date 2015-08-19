@@ -40,7 +40,7 @@ protected:
     bool operator==(const Event& that) const { return type==that.type && id==that.id; }
   };
 
-  bool model_consists_of(const std::shared_ptr<Model>& model, std::initializer_list<std::shared_ptr<Transfer>> list) const
+  bool model_consists_of(const std::shared_ptr<const Model>& model, std::initializer_list<std::shared_ptr<Transfer>> list) const
   {
     // test get_all()
     std::vector<std::shared_ptr<Transfer>> transfers(list);
@@ -82,7 +82,7 @@ TEST_F(MultiSourceFixture,MultiplexesModels)
   const Transfer::Id aid {"aid"};
   auto at = std::make_shared<Transfer>();
   at->id = aid;
-  a->get_model()->add(at);
+  a->m_model->add(at);
   expected_events.push_back(Event{Event::ADDED,aid});
 
   // confirm that the multimodel sees the new transfer
@@ -94,7 +94,7 @@ TEST_F(MultiSourceFixture,MultiplexesModels)
   const Transfer::Id bid {"bid"};
   auto bt = std::make_shared<Transfer>();
   bt->id = bid;
-  b->get_model()->add(bt);
+  b->m_model->add(bt);
   expected_events.push_back(Event{Event::ADDED,bid});
 
   // confirm that the multimodel sees the new transfer
@@ -104,20 +104,20 @@ TEST_F(MultiSourceFixture,MultiplexesModels)
 
   // poke transfer 'at'...
   at->progress = 50.0;
-  a->get_model()->emit_changed(aid);
+  a->m_model->emit_changed(aid);
   expected_events.push_back(Event{Event::CHANGED,aid});
   EXPECT_EQ(expected_events, events);
   EXPECT_TRUE(model_consists_of(multimodel, {at, bt}));
 
   // remove transfer 'at'...
-  a->get_model()->remove(aid);
+  a->m_model->remove(aid);
   expected_events.push_back(Event{Event::REMOVED,aid});
   EXPECT_EQ(expected_events, events);
   EXPECT_FALSE(a->get_model()->get(aid));
   EXPECT_TRUE(model_consists_of(multimodel, {bt}));
 
   // remove transfer 'bt'...
-  b->get_model()->remove(bid);
+  b->m_model->remove(bid);
   expected_events.push_back(Event{Event::REMOVED,bid});
   EXPECT_EQ(expected_events, events);
   EXPECT_FALSE(b->get_model()->get(aid));
@@ -139,13 +139,13 @@ TEST(Multisource,MethodDelegation)
   const Transfer::Id aid {"aid"};
   auto at = std::make_shared<Transfer>();
   at->id = aid;
-  a->get_model()->add(at);
+  a->m_model->add(at);
 
   // add a transfer to the 'b' source...
   const Transfer::Id bid {"bid"};
   auto bt = std::make_shared<Transfer>();
   bt->id = bid;
-  b->get_model()->add(bt);
+  b->m_model->add(bt);
 
   // confirm that multisource method calls are delegated to 'a'
   EXPECT_CALL(*a, open(aid)); multisource.open(aid);

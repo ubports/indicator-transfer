@@ -104,6 +104,13 @@ public:
     source->cancel(id);
   }
 
+  void clear(const Transfer::Id& id)
+  {
+    auto source = lookup_source(id);
+    g_return_if_fail(source);
+    source->clear(id);
+  }
+
   void open(const Transfer::Id& id)
   {
     auto source = lookup_source(id);
@@ -180,13 +187,18 @@ MultiSource::cancel(const Transfer::Id& id)
   impl->cancel(id);
 }
 
+void MultiSource::clear(const Transfer::Id &id)
+{
+  impl->clear(id);
+}
+
 void
 MultiSource::open_app(const Transfer::Id& id)
 {
   impl->open_app(id);
 }
 
-std::shared_ptr<MutableModel>
+const std::shared_ptr<const MutableModel>
 MultiSource::get_model()
 {
   return impl->get_model();

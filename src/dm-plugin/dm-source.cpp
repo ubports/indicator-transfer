@@ -43,7 +43,7 @@ static constexpr char const * CH_TRANSFER_IFACE_NAME {"com.ubuntu.content.dbus.T
 
 /**
  * A Transfer whose state comes from content-hub and ubuntu-download-manager.
- * 
+ *
  * Each DMTransfer tracks a com.canonical.applications.Download (ccad) object
  * from ubuntu-download-manager. The ccad is used for pause/resume/cancel,
  * state change / download progress signals, etc.
@@ -85,14 +85,14 @@ public:
   void start()
   {
     g_return_if_fail(can_start());
-    
+
     call_ccad_method_no_args_no_response("start");
   }
 
   void pause()
   {
     g_return_if_fail(can_pause());
-    
+
     call_ccad_method_no_args_no_response("pause");
   }
 
@@ -359,7 +359,7 @@ private:
             speed_Bps = 0;
             m_history.clear();
           }
- 
+
         emit_changed_soon();
       }
   }
@@ -631,12 +631,6 @@ public:
     m_model(std::make_shared<MutableModel>())
   {
     g_bus_get(G_BUS_TYPE_SESSION, m_cancellable, on_bus_ready, this);
-
-    m_model->removed().connect([this](const Transfer::Id& id){
-      auto transfer = find_transfer_by_id(id);
-      if (transfer)
-        m_removed_ccad.insert(transfer->ccad_path());
-    });
   }
 
   ~Impl()
@@ -673,6 +667,16 @@ public:
     auto transfer = find_transfer_by_id(id);
     g_return_if_fail(transfer);
     transfer->cancel();
+  }
+
+  void clear(const Transfer::Id& id)
+  {
+    auto transfer = find_transfer_by_id(id);
+    if (transfer)
+      {
+        m_removed_ccad.insert(transfer->ccad_path());
+        m_model->remove(id);
+      }
   }
 
   void open(const Transfer::Id& id)
@@ -812,7 +816,7 @@ private:
     g_debug("download signal: %s %s %s", ccad_path, signal_name, variant_str);
     g_free(variant_str);
 
-    // Route this signal to the DMTransfer for processing 
+    // Route this signal to the DMTransfer for processing
     auto self = static_cast<Impl*>(gself);
     auto transfer = self->find_transfer_by_ccad_path(ccad_path);
     if (transfer)
@@ -927,12 +931,18 @@ DMSource::cancel(const Transfer::Id& id)
 }
 
 void
-DMSource::open_app(const Transfer::Id& id)
+DMSource::clear(const Transfer::Id& id)
 {
-  impl->open_app(id);
+  impl->clear(id);
 }
 
-std::shared_ptr<MutableModel>
+void
+DMSource::open_app(const Transfer::Id& id)
+{
+    impl->open_app(id);
+}
+
+const std::shared_ptr<const MutableModel>
 DMSource::get_model()
 {
   return impl->get_model();

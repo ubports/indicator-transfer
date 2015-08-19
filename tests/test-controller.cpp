@@ -36,7 +36,6 @@ protected:
   GTestDBus* bus = nullptr;
 
   std::shared_ptr<MockSource> m_source;
-  std::shared_ptr<MutableModel> m_model;
   std::shared_ptr<Controller> m_controller;
 
   void SetUp()
@@ -44,14 +43,12 @@ protected:
     super::SetUp();
 
     m_source.reset(new MockSource);
-    m_model.reset(new MutableModel);
-    m_controller.reset(new Controller(m_model, m_source));
+    m_controller.reset(new Controller(m_source));
   }
 
   void TearDown()
   {
     m_controller.reset();
-    m_model.reset();
     m_source.reset();
 
     super::TearDown();
@@ -102,22 +99,29 @@ TEST_F(ControllerFixture, ClearAll)
       auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
-      m_model->add(t);
+      m_source->m_model->add(t);
     }
 
   // make sure all the transfers made it into the model
-  auto ids = m_model->get_ids();
-  EXPECT_EQ(G_N_ELEMENTS(transfers), ids.size());
+  EXPECT_EQ(G_N_ELEMENTS(transfers), m_controller->size());
   for (const auto& transfer : transfers)
-    EXPECT_EQ(1, ids.count(transfer.id));
+    {
+      EXPECT_EQ(1, m_controller->count(transfer.id));
+      EXPECT_CALL(*m_source, clear(transfer.id)).Times(transfer.can_clear?1:0);
+    }
 
   // call clear-all
   m_controller->clear_all();
 
-  // make sure all the clearable transfers are gone
-  ids = m_model->get_ids();
+  // make sure all the clearable transfers are gone from controler and source
+  auto source_ids = m_source->get_model()->get_ids();
+
   for (const auto& transfer : transfers)
-    EXPECT_EQ((transfer.can_clear ? 0 : 1), ids.count(transfer.id));
+    {
+      int expect_count = (transfer.can_clear ? 0 : 1);
+      EXPECT_EQ(source_ids.count(transfer.id), expect_count);
+      EXPECT_EQ(m_controller->count(transfer.id), expect_count);
+    }
 }
 
 /**
@@ -145,7 +149,7 @@ TEST_F(ControllerFixture, PauseAll)
       auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
-      m_model->add(t);
+      m_source->m_model->add(t);
       EXPECT_EQ(transfer.can_pause, t->can_pause());
       EXPECT_CALL(*m_source, pause(transfer.id)).Times(transfer.can_pause?1:0);
     }
@@ -178,7 +182,7 @@ TEST_F(ControllerFixture, ResumeAll)
       auto t = std::make_shared<Transfer>();
       t->state = transfer.state;
       t->id = transfer.id;
-      m_model->add(t);
+      m_source->m_model->add(t);
       EXPECT_EQ(transfer.can_resume, t->can_resume());
       EXPECT_CALL(*m_source, resume(transfer.id)).Times(transfer.can_resume?1:0);
     }
@@ -196,7 +200,7 @@ TEST_F(ControllerFixture, Tap)
   auto t = std::make_shared<Transfer>();
   t->state = Transfer::QUEUED;
   t->id = id;
-  m_model->add(t);
+  m_source->m_model->add(t);
 
   t->state = Transfer::QUEUED;
   EXPECT_CALL(*m_source, start(id)).Times(1);
@@ -269,7 +273,7 @@ TEST_F(ControllerFixture, Start)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_model->add(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {
@@ -289,7 +293,7 @@ TEST_F(ControllerFixture, Pause)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_model->add(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {
@@ -309,7 +313,7 @@ TEST_F(ControllerFixture, Resume)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_model->add(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {
@@ -329,7 +333,7 @@ TEST_F(ControllerFixture, Cancel)
   auto t = std::make_shared<Transfer>();
   t->id = id;
   t->state = Transfer::QUEUED;
-  m_model->add(t);
+  m_source->m_model->add(t);
 
   for (const auto& state : all_states)
     {

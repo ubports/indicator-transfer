@@ -1,3 +1,9 @@
+indicator-transfer (0.2-0buntu1) UNRELEASED; urgency=medium
+
+  * Update version to 0.2
+
+ -- Renato Araujo Oliveira Filho <renato.filho@canonical.com>  Wed, 19 Aug 2015 14:52:32 -0300
+
 indicator-transfer (0.1+15.10.20150727-0ubuntu2~gcc5.1) wily; urgency=medium
 
   * No change rebuild using GCC 5.

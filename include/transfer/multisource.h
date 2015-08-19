@@ -35,14 +35,15 @@ public:
     MultiSource();
     virtual ~MultiSource();
 
-    // Source    
+    // Source
     void open(const Transfer::Id& id) override;
     void start(const Transfer::Id& id) override;
     void pause(const Transfer::Id& id) override;
     void resume(const Transfer::Id& id) override;
     void cancel(const Transfer::Id& id) override;
+    void clear(const Transfer::Id& id) override;
     void open_app(const Transfer::Id& id) override;
-    std::shared_ptr<MutableModel> get_model() override;
+    const std::shared_ptr<const MutableModel> get_model() override;
 
     void add_source(const std::shared_ptr<Source>& source);
 

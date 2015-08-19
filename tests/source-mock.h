@@ -34,16 +34,23 @@ namespace transfer {
 class MockSource: public Source
 {
 public:
-  MockSource(): m_model(new MutableModel) {}
+  MockSource(): m_model(new MutableModel)
+  {
+    // make sure that the transfer get removed from model on clear call
+    ON_CALL(*this, clear(::testing::_))
+            .WillByDefault(::testing::Invoke(m_model.get(), &MutableModel::remove));
+  }
 
   MOCK_METHOD1(open, void(const Transfer::Id&));
   MOCK_METHOD1(start, void(const Transfer::Id&));
   MOCK_METHOD1(pause, void(const Transfer::Id&));
   MOCK_METHOD1(resume, void(const Transfer::Id&));
   MOCK_METHOD1(cancel, void(const Transfer::Id&));
+  MOCK_METHOD1(clear, void(const Transfer::Id&));
+  MOCK_METHOD1(update, void(const Transfer::Id&));
   MOCK_METHOD1(open_app, void(const Transfer::Id&));
 
-  std::shared_ptr<MutableModel> get_model() override {return m_model;}
+  const std::shared_ptr<const MutableModel> get_model() override {return m_model;}
   std::shared_ptr<MutableModel> m_model;
 };
 
