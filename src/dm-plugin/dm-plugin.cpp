@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2015 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -17,25 +17,16 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#include <transfer/world.h>
+#include <transfer/dm-source.h>
 
-namespace unity {
-namespace indicator {
-namespace transfer {
+#include <gmodule.h>
 
-/***
-****
-***/
+using namespace unity::indicator::transfer;
 
-World::~World()
+extern "C"
 {
+G_MODULE_EXPORT Source* get_source()
+{
+  return new unity::indicator::transfer::DMSource{};
 }
-
-
-/***
-****
-***/
-
-} // namespace transfer
-} // namespace indicator
-} // namespace unity
+}

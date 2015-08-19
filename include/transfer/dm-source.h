@@ -17,36 +17,43 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_WORLD_H
-#define INDICATOR_TRANSFER_WORLD_H
+#ifndef INDICATOR_TRANSFER_DM_SOURCE_H
+#define INDICATOR_TRANSFER_DM_SOURCE_H
 
-#include <transfer/model.h>
-#include <transfer/transfer.h> // Id
+#include <transfer/source.h>
 
-#include <memory> // std::shared_ptr
+#include <gio/gio.h>
+
+#include <set>
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
 /**
- * \brief Facade for everything outside of indicator-transfer
+ * \brief a Source that gets its updates & events from the Download Manager.
  */
-class World
+class DMSource: public Source
 {
 public:
-    virtual ~World();
+    DMSource();
+    ~DMSource();
 
-    virtual void open(const Transfer::Id& id) =0;
-    virtual void start(const Transfer::Id& id) =0;
-    virtual void pause(const Transfer::Id& id) =0;
-    virtual void resume(const Transfer::Id& id) =0;
-    virtual void cancel(const Transfer::Id& id) =0;
-    virtual void open_app(const Transfer::Id& id) =0;
+    void open(const Transfer::Id& id) override;
+    void start(const Transfer::Id& id) override;
+    void pause(const Transfer::Id& id) override;
+    void resume(const Transfer::Id& id) override;
+    void cancel(const Transfer::Id& id) override;
+    void open_app(const Transfer::Id& id) override;
+    std::shared_ptr<MutableModel> get_model() override;
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> impl;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_WORLD_H
+#endif // INDICATOR_TRANSFER_DM_SOURCE_H

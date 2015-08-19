@@ -17,10 +17,10 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_WORLD_MOCK_H
-#define INDICATOR_TRANSFER_WORLD_MOCK_H
+#ifndef INDICATOR_TRANSFER_SOURCE_MOCK_H
+#define INDICATOR_TRANSFER_SOURCE_MOCK_H
 
-#include <transfer/world.h>
+#include <transfer/source.h>
 
 #include "gmock/gmock.h"
 
@@ -29,21 +29,26 @@ namespace indicator {
 namespace transfer {
 
 /**
- * \brief a World that gets its updates & events from DBus
+ * \brief a Source that gets its updates & events from DBus
  */
-class MockWorld: public World
+class MockSource: public Source
 {
 public:
+  MockSource(): m_model(new MutableModel) {}
+
   MOCK_METHOD1(open, void(const Transfer::Id&));
   MOCK_METHOD1(start, void(const Transfer::Id&));
   MOCK_METHOD1(pause, void(const Transfer::Id&));
   MOCK_METHOD1(resume, void(const Transfer::Id&));
   MOCK_METHOD1(cancel, void(const Transfer::Id&));
   MOCK_METHOD1(open_app, void(const Transfer::Id&));
+
+  std::shared_ptr<MutableModel> get_model() override {return m_model;}
+  std::shared_ptr<MutableModel> m_model;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_WORLD_MOCK_H
+#endif // INDICATOR_TRANSFER_SOURCE_MOCK_H

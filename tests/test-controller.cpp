@@ -18,7 +18,7 @@
  */
 
 #include "glib-fixture.h"
-#include "world-mock.h"
+#include "source-mock.h"
 
 #include <transfer/controller.h>
 
@@ -35,7 +35,7 @@ protected:
 
   GTestDBus* bus = nullptr;
 
-  std::shared_ptr<MockWorld> m_world;
+  std::shared_ptr<MockSource> m_source;
   std::shared_ptr<MutableModel> m_model;
   std::shared_ptr<Controller> m_controller;
 
@@ -43,16 +43,16 @@ protected:
   {
     super::SetUp();
 
-    m_world.reset(new MockWorld);
+    m_source.reset(new MockSource);
     m_model.reset(new MutableModel);
-    m_controller.reset(new Controller(m_model, m_world));
+    m_controller.reset(new Controller(m_model, m_source));
   }
 
   void TearDown()
   {
     m_controller.reset();
     m_model.reset();
-    m_world.reset();
+    m_source.reset();
 
     super::TearDown();
   }
@@ -72,7 +72,7 @@ namespace
   };
 }
 
-TEST_F(ControllerFixture, HelloWorld)
+TEST_F(ControllerFixture, HelloSource)
 {
   // confirms that the Test DBus SetUp() and TearDown() works
 }
@@ -147,7 +147,7 @@ TEST_F(ControllerFixture, PauseAll)
       t->id = transfer.id;
       m_model->add(t);
       EXPECT_EQ(transfer.can_pause, t->can_pause());
-      EXPECT_CALL(*m_world, pause(transfer.id)).Times(transfer.can_pause?1:0);
+      EXPECT_CALL(*m_source, pause(transfer.id)).Times(transfer.can_pause?1:0);
     }
 
   m_controller->pause_all();
@@ -180,7 +180,7 @@ TEST_F(ControllerFixture, ResumeAll)
       t->id = transfer.id;
       m_model->add(t);
       EXPECT_EQ(transfer.can_resume, t->can_resume());
-      EXPECT_CALL(*m_world, resume(transfer.id)).Times(transfer.can_resume?1:0);
+      EXPECT_CALL(*m_source, resume(transfer.id)).Times(transfer.can_resume?1:0);
     }
 
   m_controller->resume_all();
@@ -199,67 +199,67 @@ TEST_F(ControllerFixture, Tap)
   m_model->add(t);
 
   t->state = Transfer::QUEUED;
-  EXPECT_CALL(*m_world, start(id)).Times(1);
-  EXPECT_CALL(*m_world, pause(id)).Times(0);
-  EXPECT_CALL(*m_world, resume(id)).Times(0);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(0);
+  EXPECT_CALL(*m_source, start(id)).Times(1);
+  EXPECT_CALL(*m_source, pause(id)).Times(0);
+  EXPECT_CALL(*m_source, resume(id)).Times(0);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(0);
   m_controller->tap(id);
 
   t->state = Transfer::RUNNING;
-  EXPECT_CALL(*m_world, start(id)).Times(0);
-  EXPECT_CALL(*m_world, pause(id)).Times(1);
-  EXPECT_CALL(*m_world, resume(id)).Times(0);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(0);
+  EXPECT_CALL(*m_source, start(id)).Times(0);
+  EXPECT_CALL(*m_source, pause(id)).Times(1);
+  EXPECT_CALL(*m_source, resume(id)).Times(0);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(0);
   m_controller->tap(id);
 
   t->state = Transfer::PAUSED;
-  EXPECT_CALL(*m_world, start(id)).Times(0);
-  EXPECT_CALL(*m_world, pause(id)).Times(0);
-  EXPECT_CALL(*m_world, resume(id)).Times(1);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(0);
+  EXPECT_CALL(*m_source, start(id)).Times(0);
+  EXPECT_CALL(*m_source, pause(id)).Times(0);
+  EXPECT_CALL(*m_source, resume(id)).Times(1);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(0);
   m_controller->tap(id);
 
   t->state = Transfer::CANCELED;
-  EXPECT_CALL(*m_world, start(id)).Times(0);
-  EXPECT_CALL(*m_world, pause(id)).Times(0);
-  EXPECT_CALL(*m_world, resume(id)).Times(1);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(0);
+  EXPECT_CALL(*m_source, start(id)).Times(0);
+  EXPECT_CALL(*m_source, pause(id)).Times(0);
+  EXPECT_CALL(*m_source, resume(id)).Times(1);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(0);
   m_controller->tap(id);
 
   t->state = Transfer::ERROR;
-  EXPECT_CALL(*m_world, start(id)).Times(0);
-  EXPECT_CALL(*m_world, pause(id)).Times(0);
-  EXPECT_CALL(*m_world, resume(id)).Times(1);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(0);
+  EXPECT_CALL(*m_source, start(id)).Times(0);
+  EXPECT_CALL(*m_source, pause(id)).Times(0);
+  EXPECT_CALL(*m_source, resume(id)).Times(1);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(0);
   m_controller->tap(id);
 
   t->state = Transfer::HASHING;
-  EXPECT_CALL(*m_world, start(id)).Times(0);
-  EXPECT_CALL(*m_world, pause(id)).Times(1);
-  EXPECT_CALL(*m_world, resume(id)).Times(0);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(0);
+  EXPECT_CALL(*m_source, start(id)).Times(0);
+  EXPECT_CALL(*m_source, pause(id)).Times(1);
+  EXPECT_CALL(*m_source, resume(id)).Times(0);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(0);
   m_controller->tap(id);
 
   t->state = Transfer::PROCESSING;
-  EXPECT_CALL(*m_world, start(id)).Times(0);
-  EXPECT_CALL(*m_world, pause(id)).Times(1);
-  EXPECT_CALL(*m_world, resume(id)).Times(0);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(0);
+  EXPECT_CALL(*m_source, start(id)).Times(0);
+  EXPECT_CALL(*m_source, pause(id)).Times(1);
+  EXPECT_CALL(*m_source, resume(id)).Times(0);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(0);
   m_controller->tap(id);
 
   t->state = Transfer::FINISHED;
-  EXPECT_CALL(*m_world, start(id)).Times(0);
-  EXPECT_CALL(*m_world, pause(id)).Times(0);
-  EXPECT_CALL(*m_world, resume(id)).Times(0);
-  EXPECT_CALL(*m_world, cancel(id)).Times(0);
-  EXPECT_CALL(*m_world, open(id)).Times(1);
+  EXPECT_CALL(*m_source, start(id)).Times(0);
+  EXPECT_CALL(*m_source, pause(id)).Times(0);
+  EXPECT_CALL(*m_source, resume(id)).Times(0);
+  EXPECT_CALL(*m_source, cancel(id)).Times(0);
+  EXPECT_CALL(*m_source, open(id)).Times(1);
   m_controller->tap(id);
 }
 
@@ -274,11 +274,11 @@ TEST_F(ControllerFixture, Start)
   for (const auto& state : all_states)
     {
       t->state = state;
-      EXPECT_CALL(*m_world, start(id)).Times(t->can_start()?1:0);
-      EXPECT_CALL(*m_world, pause(id)).Times(0);
-      EXPECT_CALL(*m_world, resume(id)).Times(0);
-      EXPECT_CALL(*m_world, cancel(id)).Times(0);
-      EXPECT_CALL(*m_world, open(id)).Times(0);
+      EXPECT_CALL(*m_source, start(id)).Times(t->can_start()?1:0);
+      EXPECT_CALL(*m_source, pause(id)).Times(0);
+      EXPECT_CALL(*m_source, resume(id)).Times(0);
+      EXPECT_CALL(*m_source, cancel(id)).Times(0);
+      EXPECT_CALL(*m_source, open(id)).Times(0);
       m_controller->start(id);
     }
 }
@@ -294,11 +294,11 @@ TEST_F(ControllerFixture, Pause)
   for (const auto& state : all_states)
     {
       t->state = state;
-      EXPECT_CALL(*m_world, start(id)).Times(0);
-      EXPECT_CALL(*m_world, pause(id)).Times(t->can_pause()?1:0);
-      EXPECT_CALL(*m_world, resume(id)).Times(0);
-      EXPECT_CALL(*m_world, cancel(id)).Times(0);
-      EXPECT_CALL(*m_world, open(id)).Times(0);
+      EXPECT_CALL(*m_source, start(id)).Times(0);
+      EXPECT_CALL(*m_source, pause(id)).Times(t->can_pause()?1:0);
+      EXPECT_CALL(*m_source, resume(id)).Times(0);
+      EXPECT_CALL(*m_source, cancel(id)).Times(0);
+      EXPECT_CALL(*m_source, open(id)).Times(0);
       m_controller->pause(id);
     }
 }
@@ -314,11 +314,11 @@ TEST_F(ControllerFixture, Resume)
   for (const auto& state : all_states)
     {
       t->state = state;
-      EXPECT_CALL(*m_world, start(id)).Times(0);
-      EXPECT_CALL(*m_world, pause(id)).Times(0);
-      EXPECT_CALL(*m_world, resume(id)).Times(t->can_resume()?1:0);
-      EXPECT_CALL(*m_world, cancel(id)).Times(0);
-      EXPECT_CALL(*m_world, open(id)).Times(0);
+      EXPECT_CALL(*m_source, start(id)).Times(0);
+      EXPECT_CALL(*m_source, pause(id)).Times(0);
+      EXPECT_CALL(*m_source, resume(id)).Times(t->can_resume()?1:0);
+      EXPECT_CALL(*m_source, cancel(id)).Times(0);
+      EXPECT_CALL(*m_source, open(id)).Times(0);
       m_controller->resume(id);
     }
 }
@@ -334,11 +334,11 @@ TEST_F(ControllerFixture, Cancel)
   for (const auto& state : all_states)
     {
       t->state = state;
-      EXPECT_CALL(*m_world, start(id)).Times(0);
-      EXPECT_CALL(*m_world, pause(id)).Times(0);
-      EXPECT_CALL(*m_world, resume(id)).Times(0);
-      EXPECT_CALL(*m_world, cancel(id)).Times(t->can_cancel()?1:0);
-      EXPECT_CALL(*m_world, open(id)).Times(0);
+      EXPECT_CALL(*m_source, start(id)).Times(0);
+      EXPECT_CALL(*m_source, pause(id)).Times(0);
+      EXPECT_CALL(*m_source, resume(id)).Times(0);
+      EXPECT_CALL(*m_source, cancel(id)).Times(t->can_cancel()?1:0);
+      EXPECT_CALL(*m_source, open(id)).Times(0);
       m_controller->cancel(id);
     }
 }

@@ -32,8 +32,8 @@ class MockController: public Controller
 {
 public:
   MockController(const std::shared_ptr<MutableModel>& model, 
-                 const std::shared_ptr<World>& world):
-    Controller(model, world) {}
+                 const std::shared_ptr<Source>& source):
+    Controller(model, source) {}
 
   MOCK_METHOD0(pause_all, void());
   MOCK_METHOD0(resume_all, void());

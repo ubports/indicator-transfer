@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2015 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3, as published
@@ -17,34 +17,34 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_WORLD_DBUS_H
-#define INDICATOR_TRANSFER_WORLD_DBUS_H
+#ifndef INDICATOR_TRANSFER_MULTISOURCE_H
+#define INDICATOR_TRANSFER_MULTISOURCE_H
 
-#include <transfer/world.h>
-
-#include <gio/gio.h>
-
-#include <set>
+#include <transfer/source.h>
 
 namespace unity {
 namespace indicator {
 namespace transfer {
 
 /**
- * \brief a World that gets its updates & events from DBus
+ * \brief A multiplexer/demultiplexer for sources
  */
-class DBusWorld: public World
+class MultiSource: public Source
 {
 public:
-    explicit DBusWorld(const std::shared_ptr<MutableModel>& model);
-    ~DBusWorld();
+    MultiSource();
+    virtual ~MultiSource();
 
-    void open(const Transfer::Id& id);
-    void start(const Transfer::Id& id);
-    void pause(const Transfer::Id& id);
-    void resume(const Transfer::Id& id);
-    void cancel(const Transfer::Id& id);
-    void open_app(const Transfer::Id& id);
+    // Source    
+    void open(const Transfer::Id& id) override;
+    void start(const Transfer::Id& id) override;
+    void pause(const Transfer::Id& id) override;
+    void resume(const Transfer::Id& id) override;
+    void cancel(const Transfer::Id& id) override;
+    void open_app(const Transfer::Id& id) override;
+    std::shared_ptr<MutableModel> get_model() override;
+
+    void add_source(const std::shared_ptr<Source>& source);
 
 private:
     class Impl;
@@ -55,4 +55,4 @@ private:
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_WORLD_H
+#endif // INDICATOR_TRANSFER_MULTISOURCE_H

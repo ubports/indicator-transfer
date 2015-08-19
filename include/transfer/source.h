@@ -17,12 +17,11 @@
  *   Charles Kerr <charles.kerr@canonical.com>
  */
 
-#ifndef INDICATOR_TRANSFER_CONTROLLER_H
-#define INDICATOR_TRANSFER_CONTROLLER_H
+#ifndef INDICATOR_TRANSFER_SOURCE_H
+#define INDICATOR_TRANSFER_SOURCE_H
 
 #include <transfer/model.h>
-#include <transfer/transfer.h>
-#include <transfer/source.h>
+#include <transfer/transfer.h> // Id
 
 #include <memory> // std::shared_ptr
 
@@ -31,33 +30,33 @@ namespace indicator {
 namespace transfer {
 
 /**
- * \brief Process actions triggered by views
+ * \brief Facade for everything outside of indicator-transfer
+ *
+ * A Source is where Transfer items come from; e.g. DMSource
+ * watches DownloadManager on the bus and pulls Transfers from
+ * signals emitted by it.
+ *
+ * It also handles indicator-transfer pauses, stops, resumes,
+ * etc. Transfers. For example, DMSource delegates these requests
+ * to DownloadManager over dbus.
  */
-class Controller
+class Source
 {
 public:
-    Controller(const std::shared_ptr<MutableModel>& model,
-               const std::shared_ptr<Source>& source);
-    virtual ~Controller();
+    virtual ~Source();
 
-    virtual void pause_all();
-    virtual void resume_all();
-    virtual void clear_all();
-    virtual void tap(const Transfer::Id&);
-    virtual void start(const Transfer::Id&);
-    virtual void pause(const Transfer::Id&);
-    virtual void cancel(const Transfer::Id&);
-    virtual void resume(const Transfer::Id&);
-    virtual void open(const Transfer::Id&);
-    virtual void open_app(const Transfer::Id&);
+    virtual void open(const Transfer::Id& id) =0;
+    virtual void start(const Transfer::Id& id) =0;
+    virtual void pause(const Transfer::Id& id) =0;
+    virtual void resume(const Transfer::Id& id) =0;
+    virtual void cancel(const Transfer::Id& id) =0;
+    virtual void open_app(const Transfer::Id& id) =0;
 
-private:
-    std::shared_ptr<MutableModel> m_model;
-    std::shared_ptr<Source> m_source;
+    virtual std::shared_ptr<MutableModel> get_model() =0;
 };
 
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
 
-#endif // INDICATOR_TRANSFER_CONTROLLER_H
+#endif // INDICATOR_TRANSFER_SOURCE_H
