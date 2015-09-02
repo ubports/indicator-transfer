@@ -643,6 +643,7 @@ private:
     g_variant_unref(serialized_icon);
 
     g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_UID, "s", id);
+    g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_LABEL, "s", t->custom_state.c_str());
     g_menu_item_set_action_and_target_value (menu_item,
                                              "indicator.activate-transfer",
                                              g_variant_new_string(id));
