@@ -160,6 +160,7 @@ private:
           }
 
         g_variant_builder_add(&b, "{sv}", "state", g_variant_new_int32(transfer->state));
+        g_variant_builder_add(&b, "{sv}", "state-label", g_variant_new_string(transfer->custom_state.c_str()));
       }
     else
       {
@@ -623,7 +624,6 @@ private:
 
     g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_TYPE,
                                "s", "com.canonical.indicator.transfer");
-
     GVariant * serialized_icon = nullptr;
     if (!t->app_icon.empty() && g_file_test(t->app_icon.c_str(), G_FILE_TEST_EXISTS))
       {
@@ -643,7 +643,6 @@ private:
     g_variant_unref(serialized_icon);
 
     g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_UID, "s", id);
-    g_menu_item_set_attribute (menu_item, ATTRIBUTE_X_LABEL, "s", t->custom_state.c_str());
     g_menu_item_set_action_and_target_value (menu_item,
                                              "indicator.activate-transfer",
                                              g_variant_new_string(id));
