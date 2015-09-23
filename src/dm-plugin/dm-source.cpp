@@ -23,6 +23,7 @@
 #include <ubuntu-app-launch.h>
 
 #include <json-glib/json-glib.h>
+#include <gio/gdesktopappinfo.h>
 
 #include <algorithm>
 #include <iostream>
@@ -37,10 +38,6 @@ static constexpr char const * DM_BUS_NAME {"com.canonical.applications.Downloade
 static constexpr char const * DM_MANAGER_IFACE_NAME {"com.canonical.applications.DownloadManager"};
 static constexpr char const * DM_DOWNLOAD_IFACE_NAME {"com.canonical.applications.Download"};
 
-static constexpr char const * CH_BUS_NAME {"com.ubuntu.content.dbus.Service"};
-static constexpr char const * CH_TRANSFER_IFACE_NAME {"com.ubuntu.content.dbus.Transfer"};
-
-
 /**
  * A Transfer whose state comes from content-hub and ubuntu-download-manager.
  *
@@ -48,26 +45,20 @@ static constexpr char const * CH_TRANSFER_IFACE_NAME {"com.ubuntu.content.dbus.T
  * from ubuntu-download-manager. The ccad is used for pause/resume/cancel,
  * state change / download progress signals, etc.
  *
- * Each DMTransfer also tracks a com.ubuntu.content.dbus.Transfer (cucdt)
- * object from content-hub. The cucdt is used for learning the download's peer
- * and for calling Charge() to launch the peer's app.
  */
 class DMTransfer: public Transfer
 {
 public:
 
   DMTransfer(GDBusConnection* connection,
-             const std::string& ccad_path,
-             const std::string& cucdt_path):
+             const std::string& ccad_path):
     m_bus(G_DBUS_CONNECTION(g_object_ref(connection))),
     m_cancellable(g_cancellable_new()),
-    m_ccad_path(ccad_path),
-    m_cucdt_path(cucdt_path)
+    m_ccad_path(ccad_path)
   {
     id = next_unique_id();
     time_started = time(nullptr);
     get_ccad_properties();
-    get_cucdt_properties();
   }
 
   ~DMTransfer()
@@ -110,52 +101,20 @@ public:
 
   void open()
   {
-    /* Once a transfer is complete, an app can be launched to process
-       it by calling Charge() with an empty variant list argument */
-    g_return_if_fail(!m_cucdt_path.empty());
-    g_dbus_connection_call(m_bus,
-                           CH_BUS_NAME,
-                           m_cucdt_path.c_str(),
-                           CH_TRANSFER_IFACE_NAME,
-                           "Charge",
-                           g_variant_new("(av)", nullptr),
-                           nullptr,
-                           G_DBUS_CALL_FLAGS_NONE,
-                           -1, // default timeout
-                           m_cancellable,
-                           on_cucdt_charge, // callback
-                           nullptr); // callback user_data
+      open_app();
   }
 
   void open_app()
   {
-    g_return_if_fail(!m_peer_name.empty());
+    g_return_if_fail(!m_app_id.empty());
 
-    gchar* app_id = ubuntu_app_launch_triplet_to_app_id(m_peer_name.c_str(), nullptr, nullptr);
-    g_debug("calling ubuntu_app_launch_start_application() for %s", app_id);
-    ubuntu_app_launch_start_application(app_id, nullptr);
-    g_free(app_id);
-  }
-
-  const std::string& cucdt_path() const
-  {
-    return m_cucdt_path;
+    g_debug("calling ubuntu_app_launch_start_application() for %s", m_app_id.c_str());
+    ubuntu_app_launch_start_application(m_app_id.c_str(), nullptr);
   }
 
   const std::string& ccad_path() const
   {
     return m_ccad_path;
-  }
-
-  void handle_cucdt_signal(const gchar* signal_name, GVariant* parameters)
-  {
-    if (!g_strcmp0(signal_name, "StoreChanged"))
-      {
-        const gchar* uri = nullptr;
-        g_variant_get_child(parameters, 0, "&s", &uri);
-        if (uri != nullptr)
-          set_store(uri);
-      }
   }
 
   void handle_ccad_signal(const gchar* signal_name, GVariant* parameters)
@@ -233,14 +192,6 @@ public:
   }
 
 private:
-
-  static void on_cucdt_charge(GObject      * source,
-                              GAsyncResult * res,
-                              gpointer       /*unused*/)
-  {
-    auto v = connection_call_finish(source, res, "Error calling Charge()");
-    g_clear_pointer(&v, g_variant_unref);
-  }
 
   void emit_changed_soon()
   {
@@ -406,61 +357,6 @@ private:
       }
   }
 
-  void set_store(const char* store)
-  {
-    /**
-     * This is a workaround until content-hub exposes a peer getter.
-     * As an interim step, this code sniffs the peer by looking at the store.
-     * the peer's listed in the directory component before HubIncoming, e.g.:
-     * "/home/phablet/.cache/com.ubuntu.gallery/HubIncoming/4"
-     */
-    char** strv = g_strsplit(store, "/", -1);
-    int i=0;
-    for ( ; strv && strv[i]; ++i)
-      if (!g_strcmp0(strv[i], "HubIncoming") && (i>0))
-        set_peer_name(strv[i-1]);
-    g_strfreev(strv);
-  }
-
-  void set_peer_name(const char* peer_name)
-  {
-    g_return_if_fail(peer_name && *peer_name);
-
-    g_debug("changing '%s' peer_name to '%s'", m_ccad_path.c_str(), peer_name);
-    m_peer_name = peer_name;
-
-    /* If we can find a click icon for the peer,
-       Use it as the transfer's icon */
-
-    GError* error = nullptr;
-    auto user = click_user_new_for_user(nullptr, nullptr, &error);
-    if (user != nullptr)
-      {
-        gchar* path = click_user_get_path(user, peer_name, &error);
-        if (path != nullptr)
-          {
-            auto manifest = click_user_get_manifest(user, peer_name, &error);
-            if (manifest != nullptr)
-              {
-                const auto icon_name = json_object_get_string_member(manifest, "icon");
-                if (icon_name != nullptr)
-                  {
-                    auto filename = g_build_filename(path, icon_name, nullptr);
-                    set_icon(filename);
-                    g_free(filename);
-                  }
-              }
-            g_free(path);
-          }
-      }
-
-    if (error != nullptr)
-      g_warning("Unable to get manifest for '%s' package: %s", peer_name, error->message);
-
-    g_clear_object(&user);
-    g_clear_error(&error);
-  }
-
   void set_icon(const char* filename)
   {
     const std::string tmp = filename ? filename : "";
@@ -469,35 +365,6 @@ private:
         g_debug("changing '%s' icon to '%s'", m_ccad_path.c_str(), tmp.c_str());
         app_icon = tmp;
         emit_changed_soon();
-      }
-  }
-
-  /***
-  ****  Content Hub
-  ***/
-
-  void get_cucdt_properties()
-  {
-    const auto bus_name = CH_BUS_NAME;
-    const auto object_path = m_cucdt_path.c_str();
-    const auto interface_name = CH_TRANSFER_IFACE_NAME;
-
-    g_dbus_connection_call(m_bus, bus_name, object_path, interface_name,
-                           "Store", nullptr, G_VARIANT_TYPE("(s)"),
-                           G_DBUS_CALL_FLAGS_NONE, -1,
-                           m_cancellable, on_cucdt_store, this);
-  }
-
-  static void on_cucdt_store(GObject* source, GAsyncResult* res, gpointer gself)
-  {
-    auto v = connection_call_finish(source, res, "Unable to get store");
-    if (v != nullptr)
-      {
-        const gchar* store = nullptr;
-        g_variant_get_child(v, 0, "&s", &store);
-        if (store != nullptr)
-          static_cast<DMTransfer*>(gself)->set_store(store);
-        g_variant_unref(v);
       }
   }
 
@@ -520,6 +387,25 @@ private:
                            "progress", nullptr, G_VARIANT_TYPE("(t)"),
                            G_DBUS_CALL_FLAGS_NONE, -1,
                            m_cancellable, on_ccad_progress, this);
+
+    g_dbus_connection_call(m_bus, bus_name, object_path, interface_name,
+                           "metadata", nullptr, G_VARIANT_TYPE("(a{sv})"),
+                           G_DBUS_CALL_FLAGS_NONE, -1,
+                           m_cancellable, on_ccad_metadata, this);
+
+    g_dbus_connection_call(m_bus, bus_name, object_path,
+                           "org.freedesktop.DBus.Properties",
+                           "Get", g_variant_new ("(ss)", interface_name, "DestinationApp"),
+                           G_VARIANT_TYPE ("(v)"),
+                           G_DBUS_CALL_FLAGS_NONE, -1,
+                           m_cancellable, on_ccad_destination_app, this);
+
+    g_dbus_connection_call(m_bus, bus_name, object_path,
+                           "org.freedesktop.DBus.Properties",
+                           "Get", g_variant_new ("(ss)", interface_name, "Title"),
+                           G_VARIANT_TYPE ("(v)"),
+                           G_DBUS_CALL_FLAGS_NONE, -1,
+                           m_cancellable, on_ccad_title, this);
   }
 
   static void on_ccad_total_size(GObject      * source,
@@ -556,6 +442,87 @@ private:
       }
   }
 
+  static void on_ccad_metadata(GObject      * source,
+                               GAsyncResult * res,
+                               gpointer       gself)
+  {
+    auto v = connection_call_finish(source, res, "Error calling metadata()");
+    if (v != nullptr)
+      {
+        auto self = static_cast<DMTransfer*>(gself);
+        GVariant *dict;
+        GVariantIter iter;
+        GVariant *value;
+        gchar *key;
+
+        dict = g_variant_get_child_value(v, 0);
+        g_variant_iter_init (&iter, dict);
+
+        bool found = false;
+        while (g_variant_iter_next(&iter, "{sv}", &key, &value))
+          {
+
+            if (g_strcmp0(key, "app-id") == 0)
+              {
+                found = true;
+                self->m_app_id = std::string(g_variant_get_string(value, nullptr));
+              }
+
+             // must free data for ourselves
+             g_variant_unref (value);
+             g_free (key);
+
+             if (found)
+               break;
+          }
+
+        if (found)
+          {
+            g_debug("App id: %s", self->m_app_id.c_str());
+            self->update_app_info();
+          }
+      }
+  }
+
+  static void on_ccad_destination_app(GObject      * source,
+                                      GAsyncResult * res,
+                                      gpointer       gself)
+  {
+    auto v = connection_call_finish(source, res, "Error getting destinationApp property");
+    if (v != nullptr)
+      {
+        GVariant *value, *item;
+        item = g_variant_get_child_value(v, 0);
+        value = g_variant_get_variant(item);
+        g_variant_unref(item);
+
+        auto self = static_cast<DMTransfer*>(gself);
+        self->m_destination_app = std::string(g_variant_get_string(value, nullptr));
+        g_debug("Destination app: %s", self->m_destination_app.c_str());
+        self->update_app_info();
+      }
+  }
+
+  static void on_ccad_title(GObject      * source,
+                                      GAsyncResult * res,
+                                      gpointer       gself)
+  {
+    auto v = connection_call_finish(source, res, "Error getting Title property");
+    if (v != nullptr)
+      {
+        GVariant *value, *item;
+        item = g_variant_get_child_value(v, 0);
+        value = g_variant_get_variant(item);
+        g_variant_unref(item);
+
+        auto self = static_cast<DMTransfer*>(gself);
+        auto title = g_variant_get_string(value, nullptr);
+        g_debug("Download title: %s", title);
+        if (title && strlen(title))
+          self->set_title(title);
+      }
+  }
+
   void call_ccad_method_no_args_no_response(const char* method_name)
   {
     const auto bus_name = DM_BUS_NAME;
@@ -568,6 +535,43 @@ private:
                            method_name, nullptr, nullptr,
                            G_DBUS_CALL_FLAGS_NONE, -1,
                            m_cancellable, nullptr, nullptr);
+  }
+
+  void update_app_info()
+  {
+    gchar *app_dir;
+    gchar *app_desktop_file;
+
+    // destination app has priority over app_id
+    std::string app_id = m_destination_app.empty() ? m_app_id : m_destination_app;
+
+    if (app_id.empty()) {
+        g_debug("App id is empty");
+        return;
+    }
+
+    if (!ubuntu_app_launch_application_info(app_id.c_str(), &app_dir, &app_desktop_file))
+      {
+        g_warning("Fail to get app info: %s", m_app_id.c_str());
+        return;
+      }
+
+    g_debug("App data: %s : %s", app_dir, app_desktop_file);
+    gchar *full_app_desktop_file = g_strdup_printf("%s/%s", app_dir, app_desktop_file);
+    GDesktopAppInfo *app_info = g_desktop_app_info_new_from_filename(full_app_desktop_file);
+    if (!app_info)
+      {
+        g_warning("Fail to open desktop info: %s", full_app_desktop_file);
+        g_free(full_app_desktop_file);
+        return;
+      }
+
+    g_free(full_app_desktop_file);
+    gchar *icon_name = g_desktop_app_info_get_string(app_info, "Icon");
+    g_debug("App icon: %s", icon_name);
+    set_icon(icon_name);
+    g_free(icon_name);
+    g_object_unref(app_info);
   }
 
   /***
@@ -611,9 +615,9 @@ private:
 
   GDBusConnection* m_bus = nullptr;
   GCancellable* m_cancellable = nullptr;
+  std::string m_app_id;
+  std::string m_destination_app;
   const std::string m_ccad_path;
-  const std::string m_cucdt_path;
-  std::string m_peer_name;
 };
 
 } // anonymous namespace
@@ -751,58 +755,9 @@ private:
                                                  this,
                                                  nullptr);
         m_signal_subscriptions.insert(tag);
-
-        tag = g_dbus_connection_signal_subscribe(bus,
-                                                 CH_BUS_NAME,
-                                                 CH_TRANSFER_IFACE_NAME,
-                                                 nullptr,
-                                                 nullptr,
-                                                 nullptr,
-                                                 G_DBUS_SIGNAL_FLAGS_NONE,
-                                                 on_transfer_signal_static,
-                                                 this,
-                                                 nullptr);
-        m_signal_subscriptions.insert(tag);
-      }
+    }
   }
 
-  static void on_transfer_signal_static(GDBusConnection* /*connection*/,
-                                        const gchar*     /*sender_name*/,
-                                        const gchar*       object_path,
-                                        const gchar*     /*interface_name*/,
-                                        const gchar*       signal_name,
-                                        GVariant*          parameters,
-                                        gpointer           gself)
-  {
-    static_cast<Impl*>(gself)->on_transfer_signal(object_path, signal_name, parameters);
-  }
-
-  void on_transfer_signal(const gchar* cucdt_path,
-                          const gchar* signal_name,
-                          GVariant* parameters)
-  {
-    gchar* variant_str = g_variant_print(parameters, TRUE);
-    g_debug("transfer signal: %s %s %s", cucdt_path, signal_name, variant_str);
-    g_free(variant_str);
-
-    if (!g_strcmp0(signal_name, "DownloadIdChanged"))
-      {
-        const char* ccad_path = nullptr;
-        g_variant_get_child(parameters, 0, "&s", &ccad_path);
-        g_return_if_fail(cucdt_path != nullptr);
-
-        // ensure this ccad/cucdt pair is tracked
-        if (!find_transfer_by_ccad_path(ccad_path))
-          create_new_transfer(ccad_path, cucdt_path);
-      }
-    else
-      {
-        // Route this signal to the DMTransfer for processing
-        auto transfer = find_transfer_by_cucdt_path(cucdt_path);
-        if (transfer)
-          transfer->handle_cucdt_signal(signal_name, parameters);
-      }
-  }
 
   static void on_download_signal(GDBusConnection* /*connection*/,
                                  const gchar*     /*sender_name*/,
@@ -821,6 +776,8 @@ private:
     auto transfer = self->find_transfer_by_ccad_path(ccad_path);
     if (transfer)
       transfer->handle_ccad_signal(signal_name, parameters);
+    else
+      self->create_new_transfer(ccad_path);
   }
 
   /***
@@ -840,27 +797,13 @@ private:
     return nullptr;
   }
 
-  std::shared_ptr<DMTransfer> find_transfer_by_cucdt_path(const std::string& path)
-  {
-    for (const auto& transfer : m_model->get_all())
-      {
-        const auto tmp = std::static_pointer_cast<DMTransfer>(transfer);
-
-        if (tmp && (path == tmp->cucdt_path()))
-          return tmp;
-      }
-
-    return nullptr;
-  }
-
-  void create_new_transfer(const std::string& ccad_path,
-                           const std::string& cucdt_path)
+  void create_new_transfer(const std::string& ccad_path)
   {
     // don't let transfers reappear after they've been cleared by the user
     if (m_removed_ccad.count(ccad_path))
       return;
 
-    auto new_transfer = std::make_shared<DMTransfer>(m_bus, ccad_path, cucdt_path);
+    auto new_transfer = std::make_shared<DMTransfer>(m_bus, ccad_path);
 
     m_model->add(new_transfer);
 
