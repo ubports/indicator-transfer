@@ -22,6 +22,7 @@
 #include <click.h>
 #include <ubuntu-app-launch.h>
 
+#include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
 #include <gio/gdesktopappinfo.h>
 
@@ -557,21 +558,39 @@ private:
       }
 
     g_debug("App data: %s : %s", app_dir, app_desktop_file);
-    gchar *full_app_desktop_file = g_strdup_printf("%s/%s", app_dir, app_desktop_file);
-    GDesktopAppInfo *app_info = g_desktop_app_info_new_from_filename(full_app_desktop_file);
-    if (!app_info)
+    gchar *full_app_desktop_file = g_build_filename(app_dir, app_desktop_file, nullptr);
+    GKeyFile *app_info = g_key_file_new();
+    GError *error = nullptr;
+    g_key_file_load_from_file(app_info, full_app_desktop_file, G_KEY_FILE_NONE, &error);
+    if (error)
       {
-        g_warning("Fail to open desktop info: %s", full_app_desktop_file);
+        g_warning("Fail to open desktop info: %s:%s", full_app_desktop_file, error->message);
         g_free(full_app_desktop_file);
+        g_key_file_free (app_info);
+        g_error_free(error);
         return;
       }
 
     g_free(full_app_desktop_file);
-    gchar *icon_name = g_desktop_app_info_get_string(app_info, "Icon");
-    g_debug("App icon: %s", icon_name);
-    set_icon(icon_name);
+    gchar *icon_name = g_key_file_get_string(app_info, "Desktop Entry", "Icon", &error);
+    if (error == nullptr)
+      {
+        g_debug("App icon: %s", icon_name);
+        gchar *full_icon_name = g_build_filename(app_dir, icon_name, nullptr);
+        // check if it is full path icon or a themed one
+        if (g_access(full_icon_name, F_OK) != -1)
+          set_icon(full_icon_name);
+        else
+          set_icon(icon_name);
+        g_free(full_icon_name);
+      }
+    else
+      {
+        g_warning("Fail to retrive icon:", error->message);
+        g_error_free(error);
+      }
     g_free(icon_name);
-    g_object_unref(app_info);
+    g_key_file_free(app_info);
   }
 
   /***
