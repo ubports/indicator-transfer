@@ -462,7 +462,6 @@ private:
         bool found = false;
         while (g_variant_iter_next(&iter, "{sv}", &key, &value))
           {
-
             if (g_strcmp0(key, "app-id") == 0)
               {
                 found = true;
@@ -821,6 +820,33 @@ private:
     // don't let transfers reappear after they've been cleared by the user
     if (m_removed_ccad.count(ccad_path))
       return;
+
+    // check if the download should appear on indicator
+    GError *error = nullptr;
+    auto show = g_dbus_connection_call_sync(m_bus, DM_BUS_NAME, ccad_path.c_str(),
+                                            "org.freedesktop.DBus.Properties",
+                                            "Get", g_variant_new ("(ss)", DM_DOWNLOAD_IFACE_NAME, "ShowInIndicator"),
+                                            G_VARIANT_TYPE ("(v)"),
+                                            G_DBUS_CALL_FLAGS_NONE, -1,
+                                            m_cancellable, &error);
+    if (show != nullptr)
+      {
+        GVariant *value, *item;
+        item = g_variant_get_child_value(show, 0);
+        value = g_variant_get_variant(item);
+        g_variant_unref(item);
+        g_variant_unref(show);
+        if (!g_variant_get_boolean(value))
+          {
+            m_removed_ccad.insert(ccad_path);
+            return;
+          }
+      }
+    else
+      {
+        g_warning("Fail to retrieve 'ShowInIndicator' property: %s", error->message);
+        g_error_free(error);
+      }
 
     auto new_transfer = std::make_shared<DMTransfer>(m_bus, ccad_path);
 
