@@ -560,12 +560,19 @@ private:
     gchar *full_app_desktop_file = g_build_filename(app_dir, app_desktop_file, nullptr);
     GKeyFile *app_info = g_key_file_new();
     GError *error = nullptr;
+
+    if (app_dir)
+      g_free(app_dir);
+
+    if (app_desktop_file)
+      g_free(app_desktop_file);
+
     g_key_file_load_from_file(app_info, full_app_desktop_file, G_KEY_FILE_NONE, &error);
     if (error)
       {
         g_warning("Fail to open desktop info: %s:%s", full_app_desktop_file, error->message);
         g_free(full_app_desktop_file);
-        g_key_file_free (app_info);
+        g_key_file_free(app_info);
         g_error_free(error);
         return;
       }
