@@ -517,6 +517,7 @@ private:
         self->m_destination_app = std::string(g_variant_get_string(value, nullptr));
         g_debug("Destination app: %s", self->m_destination_app.c_str());
         self->update_app_info();
+        g_variant_unref(v);
       }
   }
 
@@ -537,6 +538,7 @@ private:
         g_debug("Download title: %s", title);
         if (title && strlen(title))
           self->set_title(title);
+        g_variant_unref(v);
       }
   }
 
@@ -617,7 +619,7 @@ private:
         g_debug("App icon: %s", icon_name);
         gchar *full_icon_name = g_build_filename(app_dir, icon_name, nullptr);
         // check if it is full path icon or a themed one
-        if (g_access(full_icon_name, F_OK) != -1)
+        if (g_file_test(full_icon_name, G_FILE_TEST_EXISTS))
           set_icon(full_icon_name);
         else
           set_icon(icon_name);
@@ -875,17 +877,22 @@ private:
         GVariant *value, *item;
         item = g_variant_get_child_value(show, 0);
         value = g_variant_get_variant(item);
+        bool show_in_idicator = g_variant_get_boolean(value);
+
+        g_variant_unref(value);
         g_variant_unref(item);
         g_variant_unref(show);
-        if (!g_variant_get_boolean(value))
+
+        if (!show_in_idicator)
           {
             m_removed_ccad.insert(ccad_path);
             return;
           }
       }
-    else
+    else if (error != nullptr)
       {
-        g_warning("Fail to retrieve 'ShowInIndicator' property: %s", error->message);
+        if (!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+          g_warning("Fail to retrieve 'ShowInIndicator' property: %s", error->message);
         g_error_free(error);
       }
 
