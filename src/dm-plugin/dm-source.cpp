@@ -107,10 +107,24 @@ public:
 
   void open_app()
   {
-    g_return_if_fail(!m_app_id.empty());
+    // destination app has priority over app_id
+    std::string app_id = m_destination_app.empty() ? m_app_id : m_destination_app;
 
-    g_debug("calling ubuntu_app_launch_start_application() for %s", m_app_id.c_str());
-    ubuntu_app_launch_start_application(m_app_id.c_str(), nullptr);
+    if (app_id.empty() && !m_package_name.empty()) {
+        app_id = std::string(ubuntu_app_launch_triplet_to_app_id(m_package_name.c_str(),
+                                                                 "first-listed-app",
+                                                                 "current-user-version"));
+    }
+
+    if (app_id.empty())
+      {
+        g_warning("Fail to discovery app-id");
+      }
+    else
+      {
+        g_debug("calling ubuntu_app_launch_start_application() for %s", m_app_id.c_str());
+        ubuntu_app_launch_start_application(m_app_id.c_str(), nullptr);
+      }
   }
 
   const std::string& ccad_path() const
@@ -459,28 +473,31 @@ private:
         dict = g_variant_get_child_value(v, 0);
         g_variant_iter_init (&iter, dict);
 
-        bool found = false;
+        self->m_app_id = "";
+        self->m_package_name = "";
+
         while (g_variant_iter_next(&iter, "{sv}", &key, &value))
           {
             if (g_strcmp0(key, "app-id") == 0)
               {
-                found = true;
                 self->m_app_id = std::string(g_variant_get_string(value, nullptr));
               }
 
+            // update-manager uses package-name
+            if (g_strcmp0(key, "package-name") == 0)
+              {
+                self->m_package_name = std::string(g_variant_get_string(value, nullptr));
+              }
+
              // must free data for ourselves
-             g_variant_unref (value);
+             g_variant_unref(value);
              g_free (key);
-
-             if (found)
-               break;
           }
 
-        if (found)
-          {
-            g_debug("App id: %s", self->m_app_id.c_str());
-            self->update_app_info();
-          }
+        g_variant_unref(dict);
+        g_debug("App id: %s", self->m_app_id.c_str());
+        g_debug("Package name: %s", self->m_package_name.c_str());
+        self->update_app_info();
       }
   }
 
@@ -539,20 +556,36 @@ private:
 
   void update_app_info()
   {
-    gchar *app_dir;
-    gchar *app_desktop_file;
-
     // destination app has priority over app_id
     std::string app_id = m_destination_app.empty() ? m_app_id : m_destination_app;
 
-    if (app_id.empty()) {
-        g_debug("App id is empty");
-        return;
-    }
+    if (!app_id.empty())
+      update_app_info_from_app_id(app_id);
+    else if (!m_package_name.empty())
+      update_app_info_from_package_name(m_package_name);
+    else
+      g_warning("Download without app-id or package-name");
+  }
+
+  void update_app_info_from_package_name(const std::string &package_name)
+  {
+    std::string app_id = std::string(ubuntu_app_launch_triplet_to_app_id(package_name.c_str(),
+                                                                         "first-listed-app",
+                                                                         "current-user-version"));
+    if (!app_id.empty())
+      update_app_info_from_app_id(app_id);
+    else
+      g_warning("fail to retrive app-id from package: %s", package_name.c_str());
+  }
+
+  void update_app_info_from_app_id(const std::string &app_id)
+  {
+    gchar *app_dir;
+    gchar *app_desktop_file;
 
     if (!ubuntu_app_launch_application_info(app_id.c_str(), &app_dir, &app_desktop_file))
       {
-        g_warning("Fail to get app info: %s", m_app_id.c_str());
+        g_warning("Fail to get app info: %s", app_id.c_str());
         return;
       }
 
@@ -642,6 +675,7 @@ private:
   GCancellable* m_cancellable = nullptr;
   std::string m_app_id;
   std::string m_destination_app;
+  std::string m_package_name;
   const std::string m_ccad_path;
 };
 
