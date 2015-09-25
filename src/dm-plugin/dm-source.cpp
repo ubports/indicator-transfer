@@ -596,12 +596,7 @@ private:
     GKeyFile *app_info = g_key_file_new();
     GError *error = nullptr;
 
-    if (app_dir)
-      g_free(app_dir);
-
-    if (app_desktop_file)
-      g_free(app_desktop_file);
-
+    g_debug("Open desktop file: %s", full_app_desktop_file);
     g_key_file_load_from_file(app_info, full_app_desktop_file, G_KEY_FILE_NONE, &error);
     if (error)
       {
@@ -609,29 +604,35 @@ private:
         g_free(full_app_desktop_file);
         g_key_file_free(app_info);
         g_error_free(error);
-        return;
-      }
-
-    g_free(full_app_desktop_file);
-    gchar *icon_name = g_key_file_get_string(app_info, "Desktop Entry", "Icon", &error);
-    if (error == nullptr)
-      {
-        g_debug("App icon: %s", icon_name);
-        gchar *full_icon_name = g_build_filename(app_dir, icon_name, nullptr);
-        // check if it is full path icon or a themed one
-        if (g_file_test(full_icon_name, G_FILE_TEST_EXISTS))
-          set_icon(full_icon_name);
-        else
-          set_icon(icon_name);
-        g_free(full_icon_name);
       }
     else
       {
-        g_warning("Fail to retrive icon:", error->message);
-        g_error_free(error);
+        gchar *icon_name = g_key_file_get_string(app_info, "Desktop Entry", "Icon", &error);
+        if (error == nullptr)
+          {
+
+            gchar *full_icon_name = g_build_filename(app_dir, icon_name, nullptr);
+            g_debug("App icon: %s", icon_name);
+            g_debug("App full icon name: %s", full_icon_name);
+            // check if it is full path icon or a themed one
+            if (g_file_test(full_icon_name, G_FILE_TEST_EXISTS))
+              set_icon(full_icon_name);
+            else
+              set_icon(icon_name);
+            g_free(full_icon_name);
+          }
+        else
+          {
+            g_warning("Fail to retrive icon:", error->message);
+            g_error_free(error);
+          }
+        g_free(icon_name);
       }
-    g_free(icon_name);
+
     g_key_file_free(app_info);
+    g_free(full_app_desktop_file);
+    g_free(app_dir);
+    g_free(app_desktop_file);
   }
 
   /***
