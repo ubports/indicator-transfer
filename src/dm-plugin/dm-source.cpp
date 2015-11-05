@@ -206,6 +206,12 @@ public:
       }
   }
 
+  bool Transfer::can_resume() const override
+  {
+    return state==PAUSED;
+  }
+
+
 private:
 
   void emit_changed_soon()
@@ -548,7 +554,7 @@ private:
     const auto object_path = m_ccad_path.c_str();
     const auto interface_name = DM_DOWNLOAD_IFACE_NAME;
 
-    g_debug("%s transfer %s calling '%s'", G_STRLOC, id.c_str(), method_name);
+    g_debug("%s transfer %s calling '%s' with '%s'", G_STRLOC, id.c_str(), method_name, object_path);
 
     g_dbus_connection_call(m_bus, bus_name, object_path, interface_name,
                            method_name, nullptr, nullptr,
