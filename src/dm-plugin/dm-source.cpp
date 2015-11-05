@@ -206,7 +206,7 @@ public:
       }
   }
 
-  bool Transfer::can_resume() const override
+  bool can_resume() const override
   {
     return state==PAUSED;
   }
