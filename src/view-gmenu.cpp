@@ -290,8 +290,13 @@ public:
 
   virtual ~Menu()
   {
-    if (m_update_header_tag)
-      g_source_remove(m_update_header_tag);
+    if (m_update_header_tag > 0)
+      {
+        g_source_remove(m_update_header_tag);
+        // commit any pending change on header
+        update_header();
+      }
+
     g_clear_object(&m_menu);
   }
 
@@ -376,8 +381,9 @@ private:
     int n_failed = 0;
     int n_paused = 0;
 
-    for (const auto& transfer : m_model->get_all())
+    for (auto it=m_visible_transfers.cbegin(); it!=m_visible_transfers.cend(); ++it)
       {
+        auto transfer = m_model->get((*it).first);
         switch (transfer->state)
           {
             case Transfer::RUNNING:
@@ -422,10 +428,12 @@ private:
      currently incomplete because they're either ongoing or paused. */
   bool header_should_be_visible() const
   {
-    for (const auto& transfer : m_model->get_all())
-      if (transfer->state != Transfer::FINISHED)
-        return true;
-
+    for (auto it=m_visible_transfers.cbegin(); it!=m_visible_transfers.cend(); ++it)
+      {
+        auto transfer = m_model->get((*it).first);
+        if (transfer->state != Transfer::FINISHED)
+          return true;
+      }
     return false;
   }
 
@@ -692,6 +700,19 @@ private:
   void update(const Transfer::Id& id)
   {
     const auto t = m_model->get(id);
+
+    // For now we do not want to keep canceled or error downloads on the list
+    // the app will handle it internally
+    switch (t->state)
+      {
+        case Transfer::CANCELED:
+        case Transfer::ERROR:
+          remove(id);
+          return;
+        default:
+          break;
+      }
+
     g_return_if_fail(t);
 
     // if the transfer already has a menu item, find it
