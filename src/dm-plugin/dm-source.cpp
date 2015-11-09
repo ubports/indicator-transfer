@@ -739,6 +739,10 @@ public:
     auto transfer = find_transfer_by_id(id);
     g_return_if_fail(transfer);
     transfer->cancel();
+
+    // remove transfer from the list if canceled
+    m_removed_ccad.insert(transfer->ccad_path());
+    m_model->remove(id);
   }
 
   void clear(const Transfer::Id& id)
