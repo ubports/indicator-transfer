@@ -1,3 +1,10 @@
+indicator-transfer (0.2+15.10.20150929-0ubuntu1) wily; urgency=medium
+
+  [ Renato Araujo Oliveira Filho ]
+  * Allow to set custom states label.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Tue, 29 Sep 2015 19:17:12 +0000
+
 indicator-transfer (0.2+15.10.20150819-0ubuntu1) wily; urgency=medium
 
   [ Renato Araujo Oliveira Filho ]

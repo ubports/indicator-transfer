@@ -65,6 +65,7 @@ struct Transfer
   Id id;
   std::string title;
   std::string app_icon;
+  std::string custom_state;
 
   // meaningful iff state is ERROR
   std::string error_string;
@@ -75,7 +76,7 @@ struct Transfer
 protected:
   static std::string next_unique_id();
 };
-    
+
 } // namespace transfer
 } // namespace indicator
 } // namespace unity
