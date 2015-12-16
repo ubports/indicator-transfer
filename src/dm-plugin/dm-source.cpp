@@ -206,6 +206,12 @@ public:
       }
   }
 
+  bool can_resume() const override
+  {
+    return state==PAUSED;
+  }
+
+
 private:
 
   const std::string& download_app_id() const
@@ -553,7 +559,7 @@ private:
     const auto object_path = m_ccad_path.c_str();
     const auto interface_name = DM_DOWNLOAD_IFACE_NAME;
 
-    g_debug("%s transfer %s calling '%s'", G_STRLOC, id.c_str(), method_name);
+    g_debug("%s transfer %s calling '%s' with '%s'", G_STRLOC, id.c_str(), method_name, object_path);
 
     g_dbus_connection_call(m_bus, bus_name, object_path, interface_name,
                            method_name, nullptr, nullptr,
@@ -738,6 +744,10 @@ public:
     auto transfer = find_transfer_by_id(id);
     g_return_if_fail(transfer);
     transfer->cancel();
+
+    // remove transfer from the list if canceled
+    m_removed_ccad.insert(transfer->ccad_path());
+    m_model->remove(id);
   }
 
   void clear(const Transfer::Id& id)
