@@ -108,7 +108,7 @@ public:
   void open_app()
   {
     // destination app has priority over app_id
-    std::string app_id = m_destination_app.empty() ? m_app_id : m_destination_app;
+    std::string app_id = download_app_id();
 
     if (app_id.empty() && !m_package_name.empty()) {
         app_id = std::string(ubuntu_app_launch_triplet_to_app_id(m_package_name.c_str(),
@@ -122,8 +122,8 @@ public:
       }
     else
       {
-        g_debug("calling ubuntu_app_launch_start_application() for %s", m_app_id.c_str());
-        ubuntu_app_launch_start_application(m_app_id.c_str(), nullptr);
+        g_debug("calling ubuntu_app_launch_start_application() for %s", app_id.c_str());
+        ubuntu_app_launch_start_application(app_id.c_str(), nullptr);
       }
   }
 
@@ -207,6 +207,11 @@ public:
   }
 
 private:
+
+  const std::string& download_app_id() const
+  {
+       return m_app_id.empty() ? m_destination_app : m_app_id;
+  }
 
   void emit_changed_soon()
   {
@@ -559,7 +564,7 @@ private:
   void update_app_info()
   {
     // destination app has priority over app_id
-    std::string app_id = m_destination_app.empty() ? m_app_id : m_destination_app;
+    std::string app_id = download_app_id();
 
     if (!app_id.empty())
       update_app_info_from_app_id(app_id);
