@@ -8,4 +8,6 @@ LDFLAGS += -Wl,-z,defs -Wl,--as-needed
 override_dh_install:
 	dh_install --fail-missing
 
-
+override_dh_auto_test:
+	HOME=$(HOME) XDG_RUNTIME_DIR=$(HOME) ctest -j1 --output-on-failure
+	rm -rf $(HOME)
