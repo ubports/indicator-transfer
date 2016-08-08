@@ -1,3 +1,9 @@
+indicator-transfer (0.2+16.10.20160808.1-0ubuntu1) yakkety; urgency=medium
+
+  * No change rebuild for UAL ABI change
+
+ -- Ted Gould <ted@gould.cx>  Mon, 08 Aug 2016 21:50:50 +0000
+
 indicator-transfer (0.2+16.04.20151216.5-0ubuntu1) xenial; urgency=medium
 
   [ Renato Araujo Oliveira Filho ]
