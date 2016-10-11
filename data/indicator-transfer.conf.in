@@ -6,4 +6,15 @@ stop on desktop-end or indicator-services-end
 respawn
 respawn limit 2 10
 
+pre-start script
+	# NOTE: Only used on Unity8 today, not 7
+	#       Still allows manual starting
+	if [ "x$DESKTOP_SESSION" != "xubuntu-touch" ] && 
+	   [ "x$DESKTOP_SESSION" != "xunity8" ]; then
+		if [ "x$UPSTART_EVENTS" != "x" ] ; then
+			stop; exit 0
+		fi
+	fi
+end script
+
 exec @pkglibexecdir@/indicator-transfer-service
