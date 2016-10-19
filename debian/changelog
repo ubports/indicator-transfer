@@ -1,3 +1,10 @@
+indicator-transfer (0.2+16.10.20160808.1-0ubuntu2) yakkety; urgency=medium
+
+  * data/indicator-transfer.conf.in: Only start on Unity 8. This indicator
+    isn't very useful on U7. (LP: #1632413)
+
+ -- Iain Lane <iain@orangesquash.org.uk>  Tue, 11 Oct 2016 18:19:38 +0100
+
 indicator-transfer (0.2+16.10.20160808.1-0ubuntu1) yakkety; urgency=medium
 
   * No change rebuild for UAL ABI change
