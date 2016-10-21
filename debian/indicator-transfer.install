@@ -1,4 +1,6 @@
 usr/share/upstart/sessions/indicator-transfer.conf
+usr/share/upstart/systemd-session
+usr/lib/systemd
 etc/xdg/autostart/indicator-transfer.desktop
 usr/share/upstart/xdg/autostart/indicator-transfer.desktop
 usr/share/unity/indicators/com.canonical.indicator.transfer

@@ -1,0 +1,8 @@
+[Unit]
+Description=Indicator Transfer Backend
+PartOf=graphical-session.target
+After=indicators-pre.target
+
+[Service]
+ExecStart=@pkglibexecdir@/indicator-transfer-service
+Restart=on-failure
