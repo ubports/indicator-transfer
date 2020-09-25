@@ -49,8 +49,7 @@ pkg_check_modules(SERVICE_DEPS REQUIRED
                   properties-cpp>=0.0.1
                   click-0.4>=0.4.30
                   json-glib-1.0
-                  ubuntu-app-launch-2
-                  mirclient)
+                  ubuntu-app-launch-2)
 include_directories(SYSTEM ${SERVICE_DEPS_INCLUDE_DIRS})
 
 ##
